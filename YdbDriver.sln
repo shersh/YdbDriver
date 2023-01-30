@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6F9F549C-4070-4107-B5B6-45DE37083E0E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5DB15F65-DE78-4C0E-A3A7-28CEA0271518}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Ydb.Driver.Tests", "tests\Yandex.Ydb.Driver.Tests\Yandex.Ydb.Driver.Tests\Yandex.Ydb.Driver.Tests.csproj", "{BB75DF79-4037-4FF0-8C3A-8D3331184794}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Ydb.Driver.Proto", "src\Yandex.Ydb.Driver.Proto\Yandex.Ydb.Driver.Proto.csproj", "{2F5EF227-4643-410B-B8F1-E1E29EC26161}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Ydb.Driver", "src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj", "{D10FAF70-9B5C-4311-B4D5-1AB29C6925CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{FA3E94C9-1D60-4539-B71F-43CD205176B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortenLinks", "examples\ShortenLinks\ShortenLinks.csproj", "{477886DF-D283-49E2-A222-0A8B5FE792F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Ydb.DependencyInjection", "Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection.csproj", "{45B51D0D-643D-42C3-8F41-224DB7973D6B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB75DF79-4037-4FF0-8C3A-8D3331184794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB75DF79-4037-4FF0-8C3A-8D3331184794}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB75DF79-4037-4FF0-8C3A-8D3331184794}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB75DF79-4037-4FF0-8C3A-8D3331184794}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F5EF227-4643-410B-B8F1-E1E29EC26161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F5EF227-4643-410B-B8F1-E1E29EC26161}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F5EF227-4643-410B-B8F1-E1E29EC26161}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F5EF227-4643-410B-B8F1-E1E29EC26161}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D10FAF70-9B5C-4311-B4D5-1AB29C6925CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D10FAF70-9B5C-4311-B4D5-1AB29C6925CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D10FAF70-9B5C-4311-B4D5-1AB29C6925CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D10FAF70-9B5C-4311-B4D5-1AB29C6925CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{477886DF-D283-49E2-A222-0A8B5FE792F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{477886DF-D283-49E2-A222-0A8B5FE792F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{477886DF-D283-49E2-A222-0A8B5FE792F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{477886DF-D283-49E2-A222-0A8B5FE792F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45B51D0D-643D-42C3-8F41-224DB7973D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45B51D0D-643D-42C3-8F41-224DB7973D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45B51D0D-643D-42C3-8F41-224DB7973D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45B51D0D-643D-42C3-8F41-224DB7973D6B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BB75DF79-4037-4FF0-8C3A-8D3331184794} = {5DB15F65-DE78-4C0E-A3A7-28CEA0271518}
+		{2F5EF227-4643-410B-B8F1-E1E29EC26161} = {6F9F549C-4070-4107-B5B6-45DE37083E0E}
+		{D10FAF70-9B5C-4311-B4D5-1AB29C6925CB} = {6F9F549C-4070-4107-B5B6-45DE37083E0E}
+		{477886DF-D283-49E2-A222-0A8B5FE792F9} = {FA3E94C9-1D60-4539-B71F-43CD205176B0}
+		{45B51D0D-643D-42C3-8F41-224DB7973D6B} = {6F9F549C-4070-4107-B5B6-45DE37083E0E}
+	EndGlobalSection
+EndGlobal

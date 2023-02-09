@@ -5,15 +5,24 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <Title>Yandex.Ydb.DependencyInjection</Title>
+        <Authors>Golenok Roman</Authors>
+        <Description>DI Hosting Extension for YDB.ADO   </Description>
+        <PackageProjectUrl>https://github.com/shersh/YdbDriver</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/shersh/YdbDriver/blob/master/LICENSE.md</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/shersh/YdbDriver</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>YDB yandex ADO.NET</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Yandex.Ydb.ADO" Version="0.2.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj" />
+      <ProjectReference Include="..\..\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj" />
     </ItemGroup>
 
 </Project>

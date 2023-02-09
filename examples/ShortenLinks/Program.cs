@@ -5,11 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddSingleton<ITaskRepository, YdbTaskRepository>();
-builder.Services.AddSingleton<YdbDataSource>(provider =>
-{
-    var dataSource = YdbDataSource.Create("Host=localhost;Port=2136;Pooling=true;MaxSessions=1000;MinSessions=50");
-    return dataSource;
-});
+builder.Services.AddYdbDataSource("Host=localhost;Port=2136;Pooling=true;MaxSessions=100;");
 
 builder.Services.AddControllers();
 builder.Services.AddHostedService<TaskWorker>();

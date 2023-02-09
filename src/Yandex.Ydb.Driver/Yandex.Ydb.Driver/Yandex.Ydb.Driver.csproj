@@ -4,6 +4,19 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>Yandex.Ydb.ADO</PackageId>
+        <PackageVersion>0.2.0</PackageVersion>
+        <Authors>Roman Golenok</Authors>
+        <Description>ADO.NET integration for YDB database</Description>
+        <Copyright>Copyright (c) Roman Golenok</Copyright>
+        <PackageProjectUrl>https://github.com/shersh/YdbDriver</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/shersh/YdbDriver/blob/master/LICENSE.md</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/shersh/YdbDriver</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>YDB ADO.NET yandex</PackageTags>
+        <Company>Roman Golenok</Company>
+        <Product>Yandex.Ydb.ADO</Product>
     </PropertyGroup>
 
     <ItemGroup>

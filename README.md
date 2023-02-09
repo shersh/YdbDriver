@@ -5,7 +5,7 @@ YDB C# Driver for [YDB (Yandex Database)](https://github.com/ydb-platform/ydb). 
 [Get it on Nuget][nuget]
 
 ```bash
-PM> Install-Package Yandex.Ydb.Ado --pre-release
+PM> Install-Package Yandex.Ydb.Ado
 ```
 
 ## Features

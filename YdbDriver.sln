@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{FA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortenLinks", "examples\ShortenLinks\ShortenLinks.csproj", "{477886DF-D283-49E2-A222-0A8B5FE792F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Ydb.DependencyInjection", "Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection.csproj", "{45B51D0D-643D-42C3-8F41-224DB7973D6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yandex.Ydb.DependencyInjection", "src\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection.csproj", "{45B51D0D-643D-42C3-8F41-224DB7973D6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

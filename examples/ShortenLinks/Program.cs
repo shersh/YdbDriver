@@ -1,4 +1,3 @@
-using Npgsql;
 using Yandex.Ydb.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,18 +11,6 @@ builder.Services.AddSingleton<YdbDataSource>(provider =>
     return dataSource;
 });
 
-// builder.Services.AddSingleton<ITaskRepository, NpgsqlRepository>();
-// builder.Services.AddSingleton<ITaskRepository, YdbNativeRepository>();
-
-// builder.Services.AddSingleton<NpgsqlDataSource>(provider =>
-// {
-//     var connectionString = "Host=localhost;Username=postgres;Password=postgres;Database=players";
-//     var dataSource = NpgsqlDataSource.Create(connectionString);
-//     return dataSource;
-// });
-// builder.Services.AddYdbDataSource("Host=localhost;Port=2136;Pooling=true;MaxSessions=100");
-
-
 builder.Services.AddControllers();
 builder.Services.AddHostedService<TaskWorker>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -35,8 +22,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
-
-// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

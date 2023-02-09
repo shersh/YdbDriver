@@ -11,9 +11,7 @@
         <PackageReference Include="Dapper" Version="2.0.123" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.2" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.3" />
-        <PackageReference Include="Npgsql" Version="7.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-        <PackageReference Include="Ydb.Sdk" Version="0.0.5" />
     </ItemGroup>
 
     <ItemGroup>

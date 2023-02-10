@@ -33,9 +33,12 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
     internal async Task Open(TimeSpan timeout, CancellationToken token)
     {
         Debug.Assert(_channel == null);
-
         var settings = DataSource.Settings;
-        _channel = GrpcChannel.ForAddress($"http://{settings.Host}:{settings.Port}", new GrpcChannelOptions()
+
+        var url = $"http://{settings.Host}:{settings.Port}";
+        LogMessages.OpenningGrpcChannel(DataSource.LoggingConfiguration.ConnectionLogger, url);
+
+        _channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions()
         {
             HttpHandler = new SocketsHttpHandler
             {

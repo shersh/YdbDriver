@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Ydb;
 using Ydb.Operations;
@@ -66,6 +67,8 @@ public class YdbCommand : DbCommand
         set => _ydbConnection = (value as YdbConnection)!;
     }
 
+    protected ILogger Logger => _ydbConnection.GetCommandLogger();
+
     /// <inheritdoc />
     protected override DbParameterCollection DbParameterCollection => _parameters;
 
@@ -97,6 +100,9 @@ public class YdbCommand : DbCommand
 
     private async Task<ExecuteQueryResult> ExecuteQueryAsync()
     {
+        var sessionId = _ydbConnection.GetSessionId();
+        LogMessages.StartExecutingCommand(Logger, sessionId);
+
         Debug.Assert(_ydbConnection.Connector != null);
 
         var transactionControl = TxControl ?? Common.DefaultTxControl.Clone();
@@ -114,7 +120,7 @@ public class YdbCommand : DbCommand
 
         var request = new ExecuteDataQueryRequest
         {
-            SessionId = _ydbConnection.GetSessionId(),
+            SessionId = sessionId,
             Query = new Query
             {
                 YqlText = CommandText
@@ -138,22 +144,26 @@ public class YdbCommand : DbCommand
         }
 
         ExecuteDataQueryResponse? response = null;
-        
+
         for (int i = 0; i < 10; i++)
         {
-            response = await _ydbConnection.Connector.UnaryCallAsync(TableService.ExecuteDataQueryMethod, request, GetOptions());
+            response = await _ydbConnection.Connector.UnaryCallAsync(TableService.ExecuteDataQueryMethod, request,
+                GetOptions());
             if (!response.Operation.Ready)
+            {
                 throw new YdbDriverException($"Operation `{response.Operation.Id}` is not ready");
+            }
 
             if (response.Operation.Status == StatusIds.Types.StatusCode.Success)
             {
                 break;
             }
 
+            LogMessages.RetryExecutingCommand(Logger, sessionId, i + 1);
             await Task.Delay(i); //RETRY
             //TODO: add applying Backoff policy
         }
-        
+
         var result = response.Operation.GetResult<ExecuteQueryResult>();
         return result;
     }

@@ -168,4 +168,6 @@ public sealed class YdbConnection : DbConnection
     {
         return new(dataSource);
     }
+
+    internal ILogger GetCommandLogger() => _dataSource.Configuration.LoggingConfiguration.CommandLogger;
 }

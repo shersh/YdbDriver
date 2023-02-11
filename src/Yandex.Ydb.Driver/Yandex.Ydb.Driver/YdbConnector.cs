@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using Grpc.Core;
 using Grpc.Net.Client;
 
@@ -35,19 +37,43 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
         Debug.Assert(_channel == null);
         var settings = DataSource.Settings;
 
-        var url = $"http://{settings.Host}:{settings.Port}";
+        var handler = new SocketsHttpHandler
+        {
+            EnableMultipleHttp2Connections = true,
+            PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+            KeepAlivePingDelay = TimeSpan.FromSeconds(60),
+            KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+            MaxConnectionsPerServer = 1000
+        };
+
+        var url = $"{(settings.UseSsl ? "https" : "http")}://{settings.Host}:{settings.Port}";
         LogMessages.OpenningGrpcChannel(DataSource.LoggingConfiguration.ConnectionLogger, url);
+
+        if (settings.UseSsl)
+        {
+            var path = settings.RootCertificate;
+            if (path == null)
+                Helpers.ThrowHelper.InvalidDataException("Root certificate is null in setting for connection");
+
+            if (!File.Exists(Path.Combine(path, "cert.pem")))
+                Helpers.ThrowHelper.FileNotFound($"Cert.pem file does not exist in path `{path}`", "cert.pem");
+
+            if (!File.Exists(Path.Combine(path, "key.pem")))
+                Helpers.ThrowHelper.FileNotFound($"Key.pem file does not exist in path `{path}`", "key.pem");
+
+            var cert = X509Certificate2.CreateFromPemFile(Path.Combine(path, "cert.pem"),
+                Path.Combine(path, "key.pem"));
+            handler.SslOptions.ClientCertificates ??= new X509CertificateCollection();
+            handler.SslOptions.ClientCertificates.Add(cert);
+
+            if (settings.TrustSsl)
+                handler.SslOptions.CertificateChainPolicy = new X509ChainPolicy()
+                    { TrustMode = X509ChainTrustMode.CustomRootTrust, CustomTrustStore = { cert } };
+        }
 
         _channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions()
         {
-            HttpHandler = new SocketsHttpHandler
-            {
-                EnableMultipleHttp2Connections = true,
-                PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
-                KeepAlivePingDelay = TimeSpan.FromSeconds(60),
-                KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
-                MaxConnectionsPerServer = 1000
-            }
+            HttpHandler = handler
         });
         await _channel.ConnectAsync(token);
 

@@ -27,4 +27,16 @@ public static class ThrowHelper
     {
         throw new ObjectDisposedException(fullName);
     }
+
+    [DoesNotReturn]
+    public static void InvalidDataException(string msg)
+    {
+        ThrowDriverException(new InvalidDataException(msg));
+    }
+    
+    [DoesNotReturn]
+    public static void FileNotFound(string msg, string filename)
+    {
+        ThrowDriverException(new FileNotFoundException(msg, filename));
+    }
 }

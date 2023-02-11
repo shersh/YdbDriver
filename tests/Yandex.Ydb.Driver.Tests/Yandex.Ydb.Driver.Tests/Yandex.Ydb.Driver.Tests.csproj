@@ -27,4 +27,13 @@
       <ProjectReference Include="..\..\..\src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="certs\key.pem">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="certs\cert.pem">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

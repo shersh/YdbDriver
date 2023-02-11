@@ -154,7 +154,19 @@ public class YDbConnectionStringBuilder : DbConnectionStringBuilder
         get => GetInt32OrDefault(nameof(MaxSessions), 100);
         set => this[nameof(MaxSessions)] = value;
     }
-    
+
+    public bool UseSsl
+    {
+        get => GetBoolOrDefault(nameof(UseSsl), false);
+        set => this[nameof(UseSsl)] = value;
+    }
+
+    public bool TrustSsl
+    {
+        get => GetBoolOrDefault(nameof(TrustSsl), false);
+        set => this[nameof(TrustSsl)] = value;
+    }
+
     private string? GetString(string key)
     {
         return TryGetValue(key, out var value) ? (string)value : null;

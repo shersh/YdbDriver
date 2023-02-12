@@ -62,7 +62,7 @@ internal sealed class UnpooledYdbDataSource : YdbDataSource
         {
             var request = new CreateSessionRequest();
             var response = await _connector.UnaryCallAsync(TableService.CreateSessionMethod, request,
-                new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, database } }) { });
+                new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, database } }));
             var result = response.Operation.GetResult<CreateSessionResult>();
             return result.SessionId;
         }

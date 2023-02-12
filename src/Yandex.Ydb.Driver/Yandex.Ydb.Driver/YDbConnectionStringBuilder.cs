@@ -139,7 +139,7 @@ public class YDbConnectionStringBuilder : DbConnectionStringBuilder
 
     public bool Pooling
     {
-        get => GetBoolOrDefault(nameof(Pooling), false);
+        get => GetBoolOrDefault(nameof(Pooling), true);
         set => this[nameof(Pooling)] = value;
     }
 

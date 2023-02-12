@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Yandex.Cloud.Credentials;
+using Yandex.Ydb.Driver.Credentials;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 
 namespace Yandex.Ydb.Driver;
@@ -8,6 +10,7 @@ public class YdbDataSourceBuilder : IYdbDataSourceBuilder
     private readonly List<TypeHandlerResolverFactory> _resolverFactories = new();
     private readonly Dictionary<string, IUserTypeMapping> _userTypeMappings = new();
     private ILoggerFactory? _loggerFactory;
+    private ICredentialsProvider? _provider;
 
     public YdbDataSourceBuilder(string? connectionString = default)
     {
@@ -33,6 +36,12 @@ public class YdbDataSourceBuilder : IYdbDataSourceBuilder
     public YdbDataSourceBuilder UseLoggerFactory(ILoggerFactory? loggerFactory)
     {
         _loggerFactory = loggerFactory;
+        return this;
+    }
+
+    public YdbDataSourceBuilder UseCredentials(ICredentialsProvider provider)
+    {
+        _provider = provider;
         return this;
     }
 
@@ -77,7 +86,8 @@ public class YdbDataSourceBuilder : IYdbDataSourceBuilder
     {
         ConnectionStringBuilder.PostProcessAndValidate();
         return new YdbDataSourceConfiguration(_loggerFactory is null
-            ? YdbLoggingConfiguration.NullConfiguration
-            : new YdbLoggingConfiguration(_loggerFactory), _resolverFactories, _userTypeMappings);
+                ? YdbLoggingConfiguration.NullConfiguration
+                : new YdbLoggingConfiguration(_loggerFactory), _resolverFactories, _userTypeMappings,
+            _provider ?? new DefaultCredentialsProvider());
     }
 }

@@ -29,7 +29,10 @@ public sealed class SessionPool : ISessionPool
         for (int i = 0; i < _maxSessions; i++)
         {
             var response = await _connector.UnaryCallAsync(TableService.CreateSessionMethod, createRequest,
-                new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, database } }) { });
+                new CallOptions(new Metadata()
+                {
+                    { YdbMetadata.RpcDatabaseHeader, database },
+                }));
 
             lock (_lck)
             {

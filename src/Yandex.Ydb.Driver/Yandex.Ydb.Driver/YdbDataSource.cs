@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Yandex.Cloud.Credentials;
 using Yandex.Ydb.Driver.Helpers;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 
@@ -23,6 +24,7 @@ public abstract class YdbDataSource : DbDataSource
         Configuration = config;
         LoggingConfiguration = config.LoggingConfiguration;
         _connectionLogger = LoggingConfiguration.ConnectionLogger;
+        CredentialsProvider = config.CredentialsProvider;
         Bootstrap().GetAwaiter().GetResult();
     }
 
@@ -36,6 +38,8 @@ public abstract class YdbDataSource : DbDataSource
 
     internal TypeMapper TypeMapper { get; private set; }
 
+    internal ICredentialsProvider CredentialsProvider { get; private set; }
+    
     public override string ConnectionString { get; }
 
     internal abstract ValueTask<YdbConnector> Get(YdbConnection conn, TimeSpan timeout,

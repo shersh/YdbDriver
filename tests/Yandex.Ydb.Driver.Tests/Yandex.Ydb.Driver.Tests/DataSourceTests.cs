@@ -14,27 +14,27 @@ public class DataSourceTests
 
         Assert.IsType<InvalidDataException>(exception.InnerException);
     }
-    
+
     [Fact]
     public void DataSourceWithSsl_WrongCertPath_IsThrowException()
     {
         var exception = Assert.Throws<YdbDriverException>(() =>
         {
             using var dataSource =
-                YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\wrong_certs;");
+                YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\wrong_certs;Pooling=true");
             var dbCommand = dataSource.CreateCommand("SELECT 1, Bool('true');");
         });
 
         Assert.IsType<FileNotFoundException>(exception.InnerException);
     }
-    
+
     [Fact]
     public void DataSourceWithSsl_CustomCert_AndWithoutTrust_IsThrowException()
     {
         var exception = Assert.Throws<YdbDriverException>(() =>
         {
             using var dataSource =
-                YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;");
+                YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;Pooling=true");
             var dbCommand = dataSource.CreateCommand("SELECT 1, Bool('true');");
         });
     }
@@ -43,7 +43,7 @@ public class DataSourceTests
     public void DataSourceWithSsl_IsWorking()
     {
         using var dataSource =
-            YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true");
+            YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
         var dbCommand = dataSource.CreateCommand("SELECT 1, Bool('true');");
         var reader = dbCommand.ExecuteReader();
         var read = reader.Read();
@@ -58,7 +58,7 @@ public class DataSourceTests
     [Fact]
     public void UnpooledYdbDataSource_CreateCommand_Success()
     {
-        using var dataSource = YdbDataSource.Create("Host=localhost;Port=2136");
+        using var dataSource = YdbDataSource.Create("Host=localhost;Port=2136;Pooling=false");
 
         var dbCommand = dataSource.CreateCommand("SELECT 1, Bool('true');");
         var reader = dbCommand.ExecuteReader();

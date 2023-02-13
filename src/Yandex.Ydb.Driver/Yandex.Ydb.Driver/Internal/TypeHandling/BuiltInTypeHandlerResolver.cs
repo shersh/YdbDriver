@@ -32,6 +32,8 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
     private static readonly TimeStampHandler TimstampHandler = new();
 
     private static readonly Utf8Handler UnknownHandler = new();
+    
+    private static readonly ListHandler listHandler = new();
 
     private static readonly IReadOnlyDictionary<Type.Types.PrimitiveTypeId, YdbTypeHandler> YdbTypeToHandlerTable =
         new Dictionary<Type.Types.PrimitiveTypeId, YdbTypeHandler>
@@ -125,7 +127,7 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
             //  $struct = <|a:1|>; SELECT $struct;
             // should return struct, but returns null. Need investigation
 
-            Type.TypeOneofCase.ListType => ResolveList(type),
+            Type.TypeOneofCase.ListType => listHandler,
             // global::Ydb.Type.TypeOneofCase.TupleType => expr,
             // global::Ydb.Type.TypeOneofCase.StructType => expr,
             // global::Ydb.Type.TypeOneofCase.DictType => expr,
@@ -141,11 +143,6 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
 
             _ => throw new ArgumentOutOfRangeException(nameof(type.TypeCase))
         };
-    }
-
-    private YdbTypeHandler ResolveList(Type type)
-    {
-        throw new NotImplementedException();
     }
 
     private YdbTypeHandler? ResolveByPrimitiveId(Type.Types.PrimitiveTypeId typeTypeId)

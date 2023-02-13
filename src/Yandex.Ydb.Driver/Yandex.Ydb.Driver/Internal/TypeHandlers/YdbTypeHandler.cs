@@ -16,6 +16,7 @@ public abstract class YdbTypeHandler
             IYdbSimpleTypeHandler<TAny> simpleTypeHandler => simpleTypeHandler.Read(value, fieldDescription),
             IYdbTypeHandler<TAny> typeHandler => typeHandler.Read(value, fieldDescription),
             IYdbJsonTypeHandler jsonTypeHandler => jsonTypeHandler.ReadJson<TAny>(value, fieldDescription),
+            IContainerHandler containerHandler => containerHandler.ReadEnumerable<TAny>(value, fieldDescription),
             _ => throw new NotSupportedException(
                 $"Handler `{this.GetType().Name}` does not implement reading for type `{typeof(TAny).Name}`")
         };

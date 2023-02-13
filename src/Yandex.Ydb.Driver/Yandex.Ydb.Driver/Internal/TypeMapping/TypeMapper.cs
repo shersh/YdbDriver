@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Yandex.Ydb.Driver.Internal.TypeHandlers;
+using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeMapping;
@@ -55,8 +56,13 @@ public sealed class TypeMapper
             foreach (var resolver in _resolvers)
                 try
                 {
-                    if (resolver.ResolveByYdbType(type) is YdbTypeHandler { } handler)
-                        return handler;
+                    if (resolver.ResolveByYdbType(type) is not YdbTypeHandler { } handler) 
+                        continue;
+                    
+                    if (handler is IContainerHandler { } containerHandler)
+                        containerHandler.SetMapper(this);
+
+                    return handler;
                 }
                 catch (Exception e)
                 {

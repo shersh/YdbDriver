@@ -1,7 +1,62 @@
+using System.Collections;
+
 namespace Yandex.Ydb.Driver.Tests;
 
 public class DataSourceTests
 {
+    [Fact]
+    public void TestList()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"SELECT
+  AsList(1, 2, 3) AS `list`";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+
+        var enumerable = reader.GetFieldValue<IEnumerable<Int32>>(0);
+        Assert.NotNull(enumerable);
+        Assert.Equal(new[] { 1, 2, 3 }, enumerable);
+
+        var lsit = reader.GetFieldValue<List<Int32>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new[] { 1, 2, 3 }, lsit);
+    }
+
+
+    [Fact]
+    public void TestDoubleList()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"SELECT
+                AsList(AsList(1, 2, 3), AsList(1, 2, 3)) AS `list`";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var example = new List<List<int>>() { new List<int>() { 1, 2, 3 }, new List<int>() { 1, 2, 3 } };
+
+        var lsit = reader.GetFieldValue<List<List<Int32>>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(example, lsit);
+        
+        
+        var enumerable = reader.GetFieldValue<List<IEnumerable<int>>>(0);
+        Assert.NotNull(enumerable);
+         Assert.Equal(example, enumerable);
+    }
+
     [Fact]
     public void DataSourceWithSsl_NullCertPath_IsThrowException()
     {
@@ -21,7 +76,8 @@ public class DataSourceTests
         var exception = Assert.Throws<YdbDriverException>(() =>
         {
             using var dataSource =
-                YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\wrong_certs;Pooling=true");
+                YdbDataSource.Create(
+                    "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\wrong_certs;Pooling=true");
             var dbCommand = dataSource.CreateCommand("SELECT 1, Bool('true');");
         });
 
@@ -43,7 +99,8 @@ public class DataSourceTests
     public void DataSourceWithSsl_IsWorking()
     {
         using var dataSource =
-            YdbDataSource.Create("Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
         var dbCommand = dataSource.CreateCommand("SELECT 1, Bool('true');");
         var reader = dbCommand.ExecuteReader();
         var read = reader.Read();

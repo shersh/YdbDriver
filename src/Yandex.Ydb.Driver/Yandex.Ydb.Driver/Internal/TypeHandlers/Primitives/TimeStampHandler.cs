@@ -1,33 +1,74 @@
-﻿using Yandex.Ydb.Driver.Helpers;
+﻿using System.Collections;
+using Yandex.Cloud.Dns.V1;
+using Yandex.Ydb.Driver.Helpers;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Yandex.Ydb.Driver.Types.Primitives;
 using Ydb;
+using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 
-public sealed class ListHandler<T> : YdbTypeHandler<List<T>>
+public interface IContainerHandler
 {
-    private readonly TypeMapper _mapper;
+    void SetMapper(TypeMapper mapper);
+    TAny ReadEnumerable<TAny>(Value value, FieldDescription? fieldDescription);
+}
 
-    public ListHandler(TypeMapper mapper)
+public sealed class ListHandler : YdbTypeHandler<IEnumerable>, IContainerHandler
+{
+    private TypeMapper? _mapper;
+
+    public ListHandler()
     {
-        _mapper = mapper;
     }
 
-    public override List<T> Read(Value value, FieldDescription? fieldDescription = null)
+    public override IEnumerable Read(Value value, FieldDescription? fieldDescription = null)
     {
-        var handlerItem = _mapper.ResolveByYdbType(fieldDescription.Type.ListType.Item);
-        var result = new List<T>();
+        var handlerItem = _mapper!.ResolveByYdbType(fieldDescription!.Type.ListType.Item);
+        var fieldType = handlerItem.GetFieldType();
+        var listType = typeof(List<>).MakeGenericType(fieldType);
+        var list = (IList)Activator.CreateInstance(listType)!;
+
+        var fd = new FieldDescription(fieldDescription.Type.ListType.Item, string.Empty, 0, _mapper);
         foreach (var item in value.Items)
         {
-            result.Add(handlerItem.Read<T>(item));
+            var asObject = handlerItem.ReadAsObject(item, fd);
+            list.Add(asObject);
         }
 
-        return result;
+        return list;
     }
 
-    public override void Write(List<T> value, Value dest)
+    public TAny ReadEnumerable<TAny>(Value value, FieldDescription? fieldDescription)
+    {
+        var handlerItem = _mapper!.ResolveByYdbType(fieldDescription!.Type.ListType.Item);
+        var type = typeof(TAny);
+        if (type.IsAbstract || type.IsInterface)
+        {
+            return (TAny)Read(value, fieldDescription);   
+        }
+        
+        var collection = Activator.CreateInstance(type);
+        if (collection is not IList list)
+        {
+            if (collection is not IEnumerable)
+                throw new NotSupportedException($"Type `{type.Name}` is not supported by `{this.GetType().Name}` mapper");
+            
+            return (TAny)Read(value, fieldDescription);
+        }
+
+        var fd = new FieldDescription(fieldDescription.Type.ListType.Item, string.Empty, 0, _mapper);
+        foreach (var item in value.Items)
+        {
+            var asObject = handlerItem.ReadAsObject(item, fd);
+            list.Add(asObject);
+        }
+
+        return (TAny)collection;
+    }
+
+    public override void Write(IEnumerable value, Value dest)
     {
         throw new NotImplementedException();
     }
@@ -40,6 +81,11 @@ public sealed class ListHandler<T> : YdbTypeHandler<List<T>>
                 Item = _mapper.ResolveByValue(value).GetYdbType(value) //TODO: Maybe recursion here? Need investigation 
             }
         };
+
+    public void SetMapper(TypeMapper mapper)
+    {
+        _mapper ??= mapper;
+    }
 }
 
 public sealed class TimeStampHandler : YdbTypeHandler<DateTimeOffset>, IYdbSimpleTypeHandler<DateTimeOffset>,

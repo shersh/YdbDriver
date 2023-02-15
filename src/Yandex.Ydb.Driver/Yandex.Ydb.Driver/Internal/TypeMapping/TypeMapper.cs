@@ -10,11 +10,8 @@ namespace Yandex.Ydb.Driver.Internal.TypeMapping;
 public sealed class TypeMapper
 {
     private readonly ConcurrentDictionary<Type, YdbTypeHandler> _handlersByClrType = new();
-    private readonly ConcurrentDictionary<string, YdbTypeHandler> _handlersByDataTypeName = new();
-
-    private readonly ConcurrentDictionary<uint, YdbTypeHandler> _handlersByOID = new();
-
     private readonly Dictionary<uint, YdbTypeHandler> _userTypeMappings = new();
+
     private readonly object _writeLock = new();
     private ILogger _logger;
 
@@ -51,80 +48,28 @@ public sealed class TypeMapper
 
     public YdbTypeHandler ResolveByYdbType(global::Ydb.Type type)
     {
-        lock (_writeLock)
-        {
-            foreach (var resolver in _resolvers)
-                try
-                {
-                    if (resolver.ResolveByYdbType(type) is not YdbTypeHandler { } handler) 
-                        continue;
-                    
-                    if (handler is IContainerHandler { } containerHandler)
-                        containerHandler.SetMapper(this);
+        foreach (var resolver in _resolvers)
+            try
+            {
+                if (resolver.ResolveByYdbType(type) is not YdbTypeHandler { } handler)
+                    continue;
 
-                    return handler;
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e,
-                        "Type resolver `{Name}` threw exception while resolving value with type `{YdbType}`",
-                        resolver.GetType().Name, type.TypeCase);
-                }
-        }
+                if (handler is IContainerHandler { } containerHandler)
+                    containerHandler.SetMapper(this);
+
+                return handler;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,
+                    "Type resolver `{Name}` threw exception while resolving value with type `{YdbType}`",
+                    resolver.GetType().Name, type.TypeCase);
+            }
 
         throw new NotSupportedException();
     }
 
     #region Type handler lookup
-
-    internal YdbTypeHandler ResolveByOID(uint oid)
-    {
-        return TryResolveByOID(oid, out var result) ? result : UnrecognizedTypeHandler;
-    }
-
-    internal bool TryResolveByOID(uint oid, [NotNullWhen(true)] out YdbTypeHandler? handler)
-    {
-        if (_handlersByOID.TryGetValue(oid, out handler))
-            return true;
-
-        handler = null;
-        return false;
-    }
-
-
-    internal YdbTypeHandler ResolveByDataTypeName(string typeName)
-    {
-        return ResolveByDataTypeNameCore(typeName)!;
-    }
-
-    private YdbTypeHandler? ResolveByDataTypeNameCore(string typeName)
-    {
-        if (_handlersByDataTypeName.TryGetValue(typeName, out var handler))
-            return handler;
-
-        return ResolveLong(typeName);
-
-        YdbTypeHandler? ResolveLong(string typeName)
-        {
-            lock (_writeLock)
-            {
-                foreach (var resolver in _resolvers)
-                    try
-                    {
-                        if (resolver.ResolveByDataTypeName(typeName) is { } handler)
-                            return _handlersByDataTypeName[typeName] = handler;
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e,
-                            "Type resolver {Name} threw exception while resolving data type name {Type}",
-                            resolver.GetType().Name, typeName);
-                    }
-
-                return null;
-            }
-        }
-    }
 
     internal YdbTypeHandler ResolveByValue<T>(T? value)
     {
@@ -134,22 +79,18 @@ public sealed class TypeMapper
         if (typeof(T).IsValueType)
         {
             YdbTypeHandler? handler;
-
-            lock (_writeLock)
-            {
-                foreach (var resolver in _resolvers)
-                    try
-                    {
-                        if ((handler = resolver.ResolveValueTypeGenerically(value)) is not null)
-                            return handler;
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e,
-                            "Type resolver `{Name}` threw exception while resolving value with type `{Type}`",
-                            resolver.GetType().Name, typeof(T));
-                    }
-            }
+            foreach (var resolver in _resolvers)
+                try
+                {
+                    if ((handler = resolver.ResolveValueTypeGenerically(value)) is not null)
+                        return handler;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e,
+                        "Type resolver `{Name}` threw exception while resolving value with type `{Type}`",
+                        resolver.GetType().Name, typeof(T));
+                }
         }
 
         return ResolveByValue((object)value);
@@ -159,32 +100,34 @@ public sealed class TypeMapper
     {
         if (value == null)
         {
-            // returns NullHandler
-            throw new NotImplementedException("Returns here null handler");
+            _logger.LogInformation("Can't resolve handler for null value, returns UnknownTypeHandler");
+            return UnrecognizedTypeHandler;
         }
 
         var type = value.GetType();
-        if (_handlersByClrType.TryGetValue(type, out var handler))
-            return handler;
+        return _handlersByClrType.TryGetValue(type, out var handler) ? handler : ResolveLong(value, type);
 
-        return ResolveLong(value, type);
-
-        YdbTypeHandler ResolveLong(object value, Type type)
+        YdbTypeHandler ResolveLong(object resolveValue, Type resolveType)
         {
             foreach (var resolver in _resolvers)
                 try
                 {
-                    if (resolver.ResolveValueDependentValue(value) is { } handler)
-                        return handler;
+                    if (resolver.ResolveValueDependentValue(resolveValue) is not { } typeHandler)
+                        continue;
+
+                    if (typeHandler is IContainerHandler { } containerHandler)
+                        containerHandler.SetMapper(this);
+
+                    return typeHandler;
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e,
                         "Type resolver {Name} threw exception while resolving value with type {Type}",
-                        resolver.GetType().Name, type);
+                        resolver.GetType().Name, resolveType);
                 }
 
-            return ResolveByClrType(type);
+            return ResolveByClrType(resolveType);
         }
     }
 
@@ -193,23 +136,25 @@ public sealed class TypeMapper
         if (_handlersByClrType.TryGetValue(type, out var handler))
             return handler;
 
-        lock (_writeLock)
-        {
-            foreach (var resolver in _resolvers)
-                try
-                {
-                    if ((handler = resolver.ResolveByClrType(type)) is not null)
-                        return _handlersByClrType[type] = handler;
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e,
-                        "Type resolver {Name} threw exception while resolving value with type {Type}",
-                        resolver.GetType().Name, type);
-                }
+        foreach (var resolver in _resolvers)
+            try
+            {
+                if ((handler = resolver.ResolveByClrType(type)) is null)
+                    continue;
 
-            throw new NotSupportedException($"Type `{type.Name}` is not supported by any resolver");
-        }
+                if (handler is IContainerHandler { } containerHandler)
+                    containerHandler.SetMapper(this);
+
+                return _handlersByClrType[type] = handler;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,
+                    "Type resolver {Name} threw exception while resolving value with type {Type}",
+                    resolver.GetType().Name, type);
+            }
+
+        throw new NotSupportedException($"Type `{type.Name}` is not supported by any resolver");
     }
 
     #endregion Type handler lookup

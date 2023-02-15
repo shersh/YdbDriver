@@ -1,11 +1,245 @@
-using System.Collections;
+using System.Dynamic;
 
 namespace Yandex.Ydb.Driver.Tests;
 
 public class DataSourceTests
 {
     [Fact]
-    public void TestList()
+    public void TestSelectAsStructWithNestedStruct_ReturnsDictionaryWithDictionary()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT AsStruct(
+    1 AS a,
+    2 AS b,
+    AsStruct(1 as a) AS c
+  ) AS `struct`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Dictionary<string, object?>>(0);
+        Assert.NotNull(lsit);
+
+        Assert.Equal(new Dictionary<string, Object>()
+        {
+            { "a", 1 },
+            { "b", 2 },
+            { "c", new Dictionary<string, Object>() { { "a", 1 } } },
+        }, lsit);
+    }
+
+    [Fact]
+    public void TestSelectAsStruct_ReturnsDictionary()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT AsStruct(
+    1 AS a,
+    2 AS b,
+    ""3"" AS c
+  ) AS `struct`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Dictionary<string, object?>>(0);
+        Assert.NotNull(lsit);
+
+        Assert.Equal(new Dictionary<string, Object>()
+        {
+            { "a", 1 },
+            { "b", 2 },
+            { "c", "3" },
+        }, lsit);
+    }
+
+    [Fact]
+    public void TestWriteTuple_AcceptsTuple()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+DECLARE $tuple AS Tuple<String, Int32>;
+
+SELECT $tuple AS `tuple`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        dbCommand.AddParameter("$tuple", new Tuple<string, int>("a", 1));
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Tuple<string, int>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new Tuple<string, int>("a", 1), lsit);
+    }
+
+    [Fact]
+    public void TestSelectAsTuple_ReturnsTuple()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT AsTuple(""a"", 1) AS `tuple`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Tuple<string, int>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new Tuple<string, int>("a", 1), lsit);
+    }
+
+
+    [Fact]
+    public void TestWriteDict_AcceptsDict()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+DECLARE $lst as Dict<String, Int32>;
+SELECT $lst AS `dict`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        dbCommand.AddParameter("$lst", new Dictionary<string, int>() { { "a", 1 }, { "b", 2 }, { "c", 3 } });
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Dictionary<string, int>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new Dictionary<string, int>() { { "a", 1 }, { "b", 2 }, { "c", 3 } }, lsit);
+    }
+
+    [Fact(Skip = "CURRENTLY IT'S NOT WORKING IN YDB AND RETURNS ERROR INSTEAD OF CORRECT RESULT. WAIT FOR FIX")]
+    public void TestSelectAsDictWithoutParameters_ReturnsDictionary()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT AsDict() AS `dict`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Dictionary<string, Int32>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new Dictionary<string, int>() { }, lsit);
+    }
+
+    [Fact]
+    public void TestSelectConcreteEmptyDict_ReturnsDictionary()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT DictCreate(String, Int32) AS `dict`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Dictionary<string, Int32>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new Dictionary<string, int>() { }, lsit);
+    }
+
+    [Fact]
+    public void TestSelectAsDict_ReturnsDictionary()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT AsDict(
+    AsTuple(""a"", 1),
+    AsTuple(""b"", 2),
+    AsTuple(""c"", 3)
+  ) AS `dict`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<Dictionary<string, Int32>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new Dictionary<string, int>() { { "a", 1 }, { "b", 2 }, { "c", 3 } }, lsit);
+    }
+
+    [Fact]
+    public void TestWriteList_AcceptsArray()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+DECLARE $lst as List<Int32>;
+SELECT $lst AS `list`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        dbCommand.AddParameter("$lst", new[] { 1, 2, 3 });
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<List<Int32>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new[] { 1, 2, 3 }, lsit);
+    }
+
+    [Fact]
+    public void TestWriteList_AcceptsList()
+    {
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+DECLARE $lst as List<Int32>;
+SELECT $lst AS `list`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        dbCommand.AddParameter("$lst", new List<int>() { 1, 2, 3 });
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<List<Int32>>(0);
+        Assert.NotNull(lsit);
+        Assert.Equal(new[] { 1, 2, 3 }, lsit);
+    }
+
+    [Fact]
+    public void TestSelectList_ReturnsList()
     {
         using var dataSource =
             YdbDataSource.Create(
@@ -50,11 +284,11 @@ public class DataSourceTests
         var lsit = reader.GetFieldValue<List<List<Int32>>>(0);
         Assert.NotNull(lsit);
         Assert.Equal(example, lsit);
-        
-        
+
+
         var enumerable = reader.GetFieldValue<List<IEnumerable<int>>>(0);
         Assert.NotNull(enumerable);
-         Assert.Equal(example, enumerable);
+        Assert.Equal(example, enumerable);
     }
 
     [Fact]

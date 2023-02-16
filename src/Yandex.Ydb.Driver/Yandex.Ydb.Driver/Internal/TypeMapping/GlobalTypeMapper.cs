@@ -7,7 +7,7 @@ using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeMapping;
 
-internal sealed class GlobalTypeMapper : IYdbTypeMapper
+public sealed class GlobalTypeMapper : IYdbTypeMapper
 {
     static GlobalTypeMapper()
     {

@@ -1,4 +1,5 @@
-﻿using Yandex.Ydb.Driver.Internal.TypeHandlers;
+﻿using System.Collections;
+using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Yandex.Ydb.Driver.Types.Primitives;
@@ -32,6 +33,11 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
     private static readonly TimeStampHandler TimstampHandler = new();
 
     private static readonly Utf8Handler UnknownHandler = new();
+
+    private readonly ListHandler _listHandler = new();
+    private readonly DictionaryHandler _dictHandler = new();
+    private readonly TupleHandler _tupleHandler = new();
+    private readonly StructHandler _structHandler = new();
 
     private static readonly IReadOnlyDictionary<Type.Types.PrimitiveTypeId, YdbTypeHandler> YdbTypeToHandlerTable =
         new Dictionary<Type.Types.PrimitiveTypeId, YdbTypeHandler>
@@ -87,10 +93,10 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
 
             { typeof(Timestamp), TimstampHandler },
             { typeof(Utf8String), Utf8Handler },
-            
+
             { typeof(JsonValue), JsonHandler },
-            
-            
+
+
             // { typeof(Timestamp), TimstanpHandler },
             // { typeof(Yson), YsonHandler },
             // { typeof(Json), JsonHandler },
@@ -125,27 +131,24 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
             //  $struct = <|a:1|>; SELECT $struct;
             // should return struct, but returns null. Need investigation
 
-            Type.TypeOneofCase.ListType => ResolveList(type),
-            // global::Ydb.Type.TypeOneofCase.TupleType => expr,
-            // global::Ydb.Type.TypeOneofCase.StructType => expr,
-            // global::Ydb.Type.TypeOneofCase.DictType => expr,
+            Type.TypeOneofCase.ListType => _listHandler,
+            Type.TypeOneofCase.DictType => _dictHandler,
+            Type.TypeOneofCase.EmptyDictType => _dictHandler,
+            Type.TypeOneofCase.TupleType => _tupleHandler,
+            Type.TypeOneofCase.StructType => _structHandler,
+
             // global::Ydb.Type.TypeOneofCase.VariantType => expr,
             // global::Ydb.Type.TypeOneofCase.TaggedType => expr,
             // global::Ydb.Type.TypeOneofCase.VoidType => expr,
             // global::Ydb.Type.TypeOneofCase.NullType => expr,
             // global::Ydb.Type.TypeOneofCase.EmptyListType => expr,
-            // global::Ydb.Type.TypeOneofCase.EmptyDictType => expr,
+
             // global::Ydb.Type.TypeOneofCase.PgType => expr,
 
             Type.TypeOneofCase.None => null,
 
             _ => throw new ArgumentOutOfRangeException(nameof(type.TypeCase))
         };
-    }
-
-    private YdbTypeHandler ResolveList(Type type)
-    {
-        throw new NotImplementedException();
     }
 
     private YdbTypeHandler? ResolveByPrimitiveId(Type.Types.PrimitiveTypeId typeTypeId)
@@ -155,6 +158,41 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
 
     public override YdbTypeHandler? ResolveByClrType(System.Type type)
     {
+        if (type.IsArray)
+        {
+            return _listHandler;
+        }
+
+        if (type.IsGenericType)
+        {
+            var genericTypeDefinition = type.GetGenericTypeDefinition();
+
+            if (genericTypeDefinition == typeof(List<>))
+            {
+                return _listHandler;
+            }
+            else if (genericTypeDefinition == typeof(Dictionary<,>))
+            {
+                return _dictHandler;
+            }
+            else if (ValueTupleTypes.Contains(genericTypeDefinition))
+            {
+                return _tupleHandler;
+            }
+        }
+
         return ClrTypeToDataYdbTypeHandlers.TryGetValue(type, out var handler) ? handler : null;
     }
+
+    private static readonly HashSet<System.Type> ValueTupleTypes = new HashSet<System.Type>(new System.Type[]
+    {
+        typeof(Tuple<>),
+        typeof(Tuple<,>),
+        typeof(Tuple<,,>),
+        typeof(Tuple<,,,>),
+        typeof(Tuple<,,,,>),
+        typeof(Tuple<,,,,,>),
+        typeof(Tuple<,,,,,,>),
+        typeof(Tuple<,,,,,,,>)
+    });
 }

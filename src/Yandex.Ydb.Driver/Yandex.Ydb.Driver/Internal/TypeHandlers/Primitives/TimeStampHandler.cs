@@ -1,46 +1,12 @@
-﻿using Yandex.Ydb.Driver.Helpers;
+﻿using System.Text.Json;
+using Yandex.Cloud.Dns.V1;
+using Yandex.Ydb.Driver.Helpers;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
-using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Yandex.Ydb.Driver.Types.Primitives;
 using Ydb;
+using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
-
-public sealed class ListHandler<T> : YdbTypeHandler<List<T>>
-{
-    private readonly TypeMapper _mapper;
-
-    public ListHandler(TypeMapper mapper)
-    {
-        _mapper = mapper;
-    }
-
-    public override List<T> Read(Value value, FieldDescription? fieldDescription = null)
-    {
-        var handlerItem = _mapper.ResolveByYdbType(fieldDescription.Type.ListType.Item);
-        var result = new List<T>();
-        foreach (var item in value.Items)
-        {
-            result.Add(handlerItem.Read<T>(item));
-        }
-
-        return result;
-    }
-
-    public override void Write(List<T> value, Value dest)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
-        {
-            ListType = new ListType()
-            {
-                Item = _mapper.ResolveByValue(value).GetYdbType(value) //TODO: Maybe recursion here? Need investigation 
-            }
-        };
-}
 
 public sealed class TimeStampHandler : YdbTypeHandler<DateTimeOffset>, IYdbSimpleTypeHandler<DateTimeOffset>,
     IYdbSimpleTypeHandler<DateTime>, IYdbSimpleTypeHandler<Timestamp>

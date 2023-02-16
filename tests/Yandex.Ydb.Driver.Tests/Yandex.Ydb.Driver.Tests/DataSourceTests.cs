@@ -1,6 +1,66 @@
 using System.Dynamic;
+using Yandex.Ydb.Driver.Helpers;
+using Yandex.Ydb.Driver.Internal.TypeHandlers;
+using Yandex.Ydb.Driver.Internal.TypeMapping;
+using Ydb;
+using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Tests;
+
+public class CustomMappingTests
+{
+    public class TestStructClassMapping : IUserTypeMapping
+    {
+        public global::Ydb.Type YdbType { get; } = new global::Ydb.Type() { StructType = new StructType() { } };
+        public Type ClrType => typeof(TestStructClass);
+
+        public YdbTypeHandler CreateHandler() => new TestStructClassHandler();
+    }
+
+    public class TestStructClassHandler : YdbTypeHandler<TestStructClass>
+    {
+        public override TestStructClass Read(Value value, FieldDescription? fieldDescription = null)
+        {
+            return new TestStructClass(value.Items[0].GetInt32(), value.Items[1].GetString());
+        }
+
+        public override void Write(TestStructClass value, Value dest)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
+            new global::Ydb.Type() { StructType = new StructType() { } };
+    }
+
+    public record TestStructClass(int Index, string? Name);
+
+    [Fact]
+    public void AddedCustomMapping_UsingDuringReading()
+    {
+        GlobalTypeMapper.Instance.UserTypeMappings.TryAdd("TestStructClass", new TestStructClassMapping());
+
+        using var dataSource =
+            YdbDataSource.Create(
+                "Host=localhost;Port=2135;UseSsl=true;RootCertificate=.\\certs;TrustSsl=true;Pooling=true");
+
+        var yql = @"
+SELECT AsStruct(
+    123 AS Index,
+    ""TestName"" AS b    
+  ) AS `struct`;";
+
+        var dbCommand = dataSource.CreateCommand(yql);
+        var reader = dbCommand.ExecuteReader();
+        var read = reader.Read();
+        Assert.True(read);
+
+        var lsit = reader.GetFieldValue<TestStructClass>(0);
+        Assert.NotNull(lsit);
+
+        Assert.Equal(new TestStructClass(123, "TestName"), lsit);
+    }
+}
 
 public class DataSourceTests
 {

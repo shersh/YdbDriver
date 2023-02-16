@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
+using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeMapping;
@@ -34,16 +34,9 @@ public sealed class TypeMapper
         IReadOnlyDictionary<string, IUserTypeMapping> userTypeMappings, ILogger logger)
     {
         _logger = logger;
-        var resolvers = new TypeHandlerResolver[resolverFactories.Count];
-        for (var i = 0; i < resolverFactories.Count; i++)
-            resolvers[i] = resolverFactories[i].Create();
-
-        _resolvers = resolvers;
-
-        foreach (var userTypeMapping in userTypeMappings.Values)
-        {
-            //TODO
-        }
+        var resolvers = new List<TypeHandlerResolver> { new UserDefinedTypeHandlerResolver(userTypeMappings.Values) };
+        resolvers.AddRange(resolverFactories.Select(factory => factory.Create()));
+        _resolvers = resolvers.ToArray();
     }
 
     public YdbTypeHandler ResolveByYdbType(global::Ydb.Type type)

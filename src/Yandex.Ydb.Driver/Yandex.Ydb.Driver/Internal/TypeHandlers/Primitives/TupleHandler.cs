@@ -7,52 +7,6 @@ using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 
-public sealed class StructHandler : ContainerHandlerBase<IDictionary<string, object?>>
-{
-    public override IDictionary<string, object?> Read(Value value, FieldDescription? fieldDescription = null)
-    {
-        Debug.Assert(fieldDescription != null, nameof(fieldDescription) + " != null");
-        Debug.Assert(Mapper != null, nameof(Mapper) + " != null");
-
-        var members = fieldDescription.Type.StructType.Members;
-
-        var dict = new Dictionary<string, object?>();
-        for (var index = 0; index < members.Count; index++)
-        {
-            var member = members[index];
-            var resolveByYdbType = Mapper.ResolveByYdbType(member.Type);
-
-            dict[member.Name] = resolveByYdbType.ReadAsObject(value.Items[index],
-                new FieldDescription(member.Type, member.Name, index, Mapper));
-        }
-
-        return dict;
-    }
-
-    public override void Write(IDictionary<string, object?> value, Value dest)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
-    {
-        throw new NotImplementedException();
-    }
-
-    public override TAny ReadContainerAs<TAny>(Value value, FieldDescription? fieldDescription)
-    {
-        if (typeof(TAny) == typeof(Dictionary<string, Object?>))
-            return (TAny)Read(value, fieldDescription);
-
-        throw new NotSupportedException("User defined struct are not supported yet");
-    }
-
-    public override void WriteContainer<TAny>(TAny value, Value dest)
-    {
-        throw new NotImplementedException();
-    }
-}
-
 public sealed class TupleHandler : ContainerHandlerBase<ITuple>
 {
     private System.Type GetGenericTupleType(FieldDescription tupleInfo)

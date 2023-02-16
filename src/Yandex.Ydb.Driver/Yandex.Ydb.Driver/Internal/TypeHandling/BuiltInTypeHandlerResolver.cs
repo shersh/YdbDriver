@@ -136,7 +136,7 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
             Type.TypeOneofCase.EmptyDictType => _dictHandler,
             Type.TypeOneofCase.TupleType => _tupleHandler,
             Type.TypeOneofCase.StructType => _structHandler,
-            
+
             // global::Ydb.Type.TypeOneofCase.VariantType => expr,
             // global::Ydb.Type.TypeOneofCase.TaggedType => expr,
             // global::Ydb.Type.TypeOneofCase.VoidType => expr,

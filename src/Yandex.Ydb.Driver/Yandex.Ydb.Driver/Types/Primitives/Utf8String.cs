@@ -5,32 +5,47 @@ namespace Yandex.Ydb.Driver.Types.Primitives;
 
 public class Timestamp
 {
-    public long Value { get; }
-
     public Timestamp(long unixts)
     {
         Value = unixts;
     }
 
-    public static Timestamp GetCurrent() => new Timestamp(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+    public long Value { get; }
+
+    public static Timestamp GetCurrent()
+    {
+        return new(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+    }
 }
 
 public class JsonValue
 {
-    public string Value { get; }
-
     private JsonValue(string value)
     {
         Value = value;
     }
 
-    public static JsonValue FromString(string str) => new JsonValue(str);
+    public string Value { get; }
 
-    public static JsonValue FromObject(object obj) => new JsonValue(JsonSerializer.Serialize(obj));
+    public static JsonValue FromString(string str)
+    {
+        return new(str);
+    }
 
-    public static JsonValue From<T>(T obj) => new JsonValue(JsonSerializer.Serialize(obj));
+    public static JsonValue FromObject(object obj)
+    {
+        return new(JsonSerializer.Serialize(obj));
+    }
 
-    public T? To<T>() => JsonSerializer.Deserialize<T>(Value);
+    public static JsonValue From<T>(T obj)
+    {
+        return new(JsonSerializer.Serialize(obj));
+    }
+
+    public T? To<T>()
+    {
+        return JsonSerializer.Deserialize<T>(Value);
+    }
 }
 
 public class Utf8String

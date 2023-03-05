@@ -9,7 +9,8 @@ public sealed class YdbConnectionSettings
     {
     }
 
-    public YdbConnectionSettings(string? host, ushort port, string? user, string? password, string database, bool useSsl)
+    public YdbConnectionSettings(string? host, ushort port, string? user, string? password, string database,
+        bool useSsl)
     {
         if (string.IsNullOrEmpty(host))
             ThrowHelper.ThrowNullException(nameof(host));

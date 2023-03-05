@@ -33,8 +33,8 @@ UPSERT INTO tasks (`task_id`, `task`, `created_at`) VALUES ($id, $task, $created
     public async Task<QueryResult?> GetNextTask()
     {
         return null;
-        
-    
+
+
         await using var connection = await _source.OpenConnectionAsync();
         var ydbCommand = connection.CreateYdbCommand();
         ydbCommand.CommandText =
@@ -45,12 +45,12 @@ UPSERT INTO tasks (`task_id`, `task`, `created_at`) VALUES ($id, $task, $created
         if (!resultAsync)
             return null;
 
-        var first = new QueryResult()
+        var first = new QueryResult
         {
             TaskId = reader.GetString(0),
             Task = reader.GetString(1),
-            CreatedAt = reader.GetFieldValue<UInt64>(2),
-            IsProcessed = reader.GetFieldValue<Boolean>(3),
+            CreatedAt = reader.GetFieldValue<ulong>(2),
+            IsProcessed = reader.GetFieldValue<bool>(3)
         };
 
         // var first = await connection.QueryFirstOrDefaultAsync<QueryResult>(

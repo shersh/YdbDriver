@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
 using Yandex.Ydb.Driver.Types.Primitives;
 using Ydb.Table;
 
@@ -28,19 +27,12 @@ public class YdbCommandTests
         Assert.Equal(@"{""Hello"":""From YDB ;)"",""Index"":123}", str);
         var fieldValue = reader.GetFieldValue<JsonValue>(0);
         Assert.Equal(@"{""Hello"":""From YDB ;)"",""Index"":123}", fieldValue.Value);
-        
+
         var testClass = reader.GetFieldValue<JsonTestClass>(0);
         Assert.Equal(123, testClass.Index);
         Assert.Equal("From YDB ;)", testClass.Hello);
     }
-    
-    public class JsonTestClass
-    {
-        public string Hello { get; set; }
 
-        public int Index { get; set; }
-    }
-    
 
     [Fact]
     public void ExecuteNonQuery_WithDefaultTxControl_Success()
@@ -59,9 +51,9 @@ public class YdbCommandTests
     {
         var connection = TestHelper.GetDefaultConnectionAndOpen();
         var command = connection.CreateYdbCommand();
-        command.TxControl = new TransactionControl()
+        command.TxControl = new TransactionControl
         {
-            BeginTx = new TransactionSettings() { SerializableReadWrite = new SerializableModeSettings() }
+            BeginTx = new TransactionSettings { SerializableReadWrite = new SerializableModeSettings() }
         };
         command.CommandText = "SELECT 1;";
         var result = command.ExecuteNonQuery();
@@ -102,8 +94,8 @@ public class YdbCommandTests
         dbParameter.Value = -321;
 
         command.Parameters.Add(dbParameter);
-        command.Parameters.Add(new YdbParameter<UInt64>("$count", (UInt64)89172318273));
-        command.Parameters.Add(new YdbParameter<UInt32>("$some", 123123u));
+        command.Parameters.Add(new YdbParameter<ulong>("$count", 89172318273));
+        command.Parameters.Add(new YdbParameter<uint>("$some", 123123u));
         command.Parameters.Add(new YdbParameter<bool>("$b", true));
 
         var reader = command.ExecuteReader();
@@ -133,7 +125,7 @@ public class YdbCommandTests
         dbParameter.Value = -321;
 
         command.Parameters.Add(dbParameter);
-        command.Parameters.Add(new YdbParameter("$count", (UInt64)89172318273));
+        command.Parameters.Add(new YdbParameter("$count", (ulong)89172318273));
         command.Parameters.Add(new YdbParameter("$some", 123123u));
         command.Parameters.Add(new YdbParameter("$b", true));
 
@@ -145,45 +137,39 @@ public class YdbCommandTests
         Assert.Equal(true, reader.GetBoolean(3));
     }
 
-    public record TestClass(int a, string? b);
-
     [Fact]
     public void ExecuteDbDataReader_Success()
     {
         var connection = TestHelper.GetDefaultConnectionAndOpen();
         var command = connection.CreateYdbCommand();
 
-        var examples = new List<(object, Func<DbDataReader, int, object>)>()
+        var examples = new List<(object, Func<DbDataReader, int, object>)>
         {
-            { (true, (dataReader, i) => dataReader.GetBoolean(i)) },
-            { ((short)1, (dataReader, i) => dataReader.GetInt16(i)) },
-            { (-1, (dataReader, i) => dataReader.GetInt32(i)) },
-            { (2, (dataReader, i) => dataReader.GetInt32(i)) },
-            { (-3L, (dataReader, i) => dataReader.GetInt64(i)) },
-            { (4L, (dataReader, i) => dataReader.GetInt64(i)) },
-            { (-5f, (dataReader, i) => dataReader.GetFloat(i)) },
-            { (6d, (dataReader, i) => dataReader.GetDouble(i)) },
-            { ("foo", (dataReader, i) => dataReader.GetString(i)) },
-            { ("Hello", (dataReader, i) => dataReader.GetString(i)) },
-            { (Guid.Parse("f9d5cc3f-f1dc-4d9c-b97e-766e57ca4ccb"), (dataReader, i) => dataReader.GetGuid(i)) },
-            { ("Im Optional", (dataReader, i) => dataReader.GetString(i)) },
-            { ("Im Optional twice or more", (dataReader, i) => dataReader.GetString(i)) },
-            { ((decimal)1.23, (dataReader, i) => dataReader.GetDecimal(i)) },
-            { ("<a=1>[3;%false]", (dataReader, i) => dataReader.GetString(i)) },
-            { (@"{""a"":1,""b"":null}", (dataReader, i) => dataReader.GetString(i)) },
-            { (new DateTime(2017, 11, 27), (dataReader, i) => dataReader.GetFieldValue<DateTime>(i)) },
-            { ("27.11.2017", (dataReader, i) => dataReader.GetString(i)) },
-            { (new DateTime(2017, 11, 27, 13, 24, 0), (dataReader, i) => dataReader.GetFieldValue<DateTime>(i)) },
-            {
-                (DateTimeOffset.Parse("2017-11-27T13:24:00.123456Z", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
-                    (dataReader, i) => dataReader.GetFieldValue<DateTimeOffset>(i))
-            },
-            {
-                (DateTime.Parse("2017-11-27T13:24:00.123456Z", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
-                    (dataReader, i) => dataReader.GetFieldValue<DateTime>(i))
-            },
+            (true, (dataReader, i) => dataReader.GetBoolean(i)),
+            ((short)1, (dataReader, i) => dataReader.GetInt16(i)),
+            (-1, (dataReader, i) => dataReader.GetInt32(i)),
+            (2, (dataReader, i) => dataReader.GetInt32(i)),
+            (-3L, (dataReader, i) => dataReader.GetInt64(i)),
+            (4L, (dataReader, i) => dataReader.GetInt64(i)),
+            (-5f, (dataReader, i) => dataReader.GetFloat(i)),
+            (6d, (dataReader, i) => dataReader.GetDouble(i)),
+            ("foo", (dataReader, i) => dataReader.GetString(i)),
+            ("Hello", (dataReader, i) => dataReader.GetString(i)),
+            (Guid.Parse("f9d5cc3f-f1dc-4d9c-b97e-766e57ca4ccb"), (dataReader, i) => dataReader.GetGuid(i)),
+            ("Im Optional", (dataReader, i) => dataReader.GetString(i)),
+            ("Im Optional twice or more", (dataReader, i) => dataReader.GetString(i)),
+            ((decimal)1.23, (dataReader, i) => dataReader.GetDecimal(i)),
+            ("<a=1>[3;%false]", (dataReader, i) => dataReader.GetString(i)),
+            (@"{""a"":1,""b"":null}", (dataReader, i) => dataReader.GetString(i)),
+            (new DateTime(2017, 11, 27), (dataReader, i) => dataReader.GetFieldValue<DateTime>(i)),
+            ("27.11.2017", (dataReader, i) => dataReader.GetString(i)),
+            (new DateTime(2017, 11, 27, 13, 24, 0), (dataReader, i) => dataReader.GetFieldValue<DateTime>(i)),
+            (DateTimeOffset.Parse("2017-11-27T13:24:00.123456Z", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
+                (dataReader, i) => dataReader.GetFieldValue<DateTimeOffset>(i)),
+            (DateTime.Parse("2017-11-27T13:24:00.123456Z", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
+                (dataReader, i) => dataReader.GetFieldValue<DateTime>(i)),
 
-            { (new TestClass(1, null), (dataReader, i) => dataReader.GetFieldValue<TestClass>(i)) },
+            (new TestClass(1, null), (dataReader, i) => dataReader.GetFieldValue<TestClass>(i))
         };
 
         command.CommandText = @"SELECT
@@ -231,4 +217,13 @@ public class YdbCommandTests
 
         Assert.Fail("Should return before");
     }
+
+    public class JsonTestClass
+    {
+        public string Hello { get; set; }
+
+        public int Index { get; set; }
+    }
+
+    public record TestClass(int a, string? b);
 }

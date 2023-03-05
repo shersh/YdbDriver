@@ -3,11 +3,22 @@ using Yandex.Ydb.Driver.Helpers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Ydb;
+using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeMapping;
 
 public class TextTypeHandler : YdbPrimitiveTypeHandler<string>, IYdbTypeHandler<Guid>
 {
+    public Guid Read(Value value, FieldDescription? fieldDescription)
+    {
+        return Guid.Parse(value.GetString());
+    }
+
+    public void Write(Guid value, Value dest)
+    {
+        dest.BytesValue = ByteString.CopyFromUtf8(Convert.ToString(value.ToString()));
+    }
+
     protected override void WriteAsObject(object value, Value dest)
     {
         dest.BytesValue = ByteString.CopyFromUtf8(Convert.ToString(value));
@@ -18,11 +29,13 @@ public class TextTypeHandler : YdbPrimitiveTypeHandler<string>, IYdbTypeHandler<
         dest.BytesValue = ByteString.CopyFromUtf8(Convert.ToString(value));
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.String
+            TypeId = Type.Types.PrimitiveTypeId.String
         };
+    }
 
     public override void Write(bool value, Value dest)
     {
@@ -72,15 +85,5 @@ public class TextTypeHandler : YdbPrimitiveTypeHandler<string>, IYdbTypeHandler<
     public override object ReadAsObject(Value value, FieldDescription? fieldDescription = null)
     {
         return value.GetString();
-    }
-
-    public Guid Read(Value value, FieldDescription? fieldDescription)
-    {
-        return Guid.Parse(value.GetString());
-    }
-
-    public void Write(Guid value, Value dest)
-    {
-        dest.BytesValue = ByteString.CopyFromUtf8(Convert.ToString(value.ToString()));
     }
 }

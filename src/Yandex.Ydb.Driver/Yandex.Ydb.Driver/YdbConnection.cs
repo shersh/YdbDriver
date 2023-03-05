@@ -2,7 +2,6 @@
 using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 
@@ -82,30 +81,18 @@ public sealed class YdbConnection : DbConnection
     {
         _state = ConnectionState.Closed;
 
-        if (!string.IsNullOrEmpty(_sessionId))
-        {
-            await _dataSource.ReturnAsync(_sessionId);
-        }
+        if (!string.IsNullOrEmpty(_sessionId)) await _dataSource.ReturnAsync(_sessionId);
 
-        if (Connector is not null)
-        {
-            Connector = null;
-        }
+        if (Connector is not null) Connector = null;
     }
 
     public override void Close()
     {
         _state = ConnectionState.Closed;
 
-        if (!string.IsNullOrEmpty(_sessionId))
-        {
-            _dataSource.Return(_sessionId);
-        }
+        if (!string.IsNullOrEmpty(_sessionId)) _dataSource.Return(_sessionId);
 
-        if (Connector is not null)
-        {
-            Connector = null;
-        }
+        if (Connector is not null) Connector = null;
     }
 
     public override void Open()
@@ -166,8 +153,11 @@ public sealed class YdbConnection : DbConnection
 
     internal static YdbConnection FromDataSource(YdbDataSource dataSource)
     {
-        return new(dataSource);
+        return new YdbConnection(dataSource);
     }
 
-    internal ILogger GetCommandLogger() => _dataSource.Configuration.LoggingConfiguration.CommandLogger;
+    internal ILogger GetCommandLogger()
+    {
+        return _dataSource.Configuration.LoggingConfiguration.CommandLogger;
+    }
 }

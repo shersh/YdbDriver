@@ -44,14 +44,14 @@ public sealed class StructHandler : ContainerHandlerBase<IDictionary<string, obj
         Debug.Assert(Mapper != null, nameof(Mapper) + " != null");
 
         var structType = new StructType();
-        var result = new Type() { StructType = structType };
+        var result = new Type { StructType = structType };
 
         if (value is Dictionary<string, object?> dict)
         {
             foreach (var (key, o) in dict)
             {
                 var typeHandler = Mapper.ResolveByValue(o);
-                structType.Members.Add(new StructMember() { Name = key, Type = typeHandler.GetYdbType(o) });
+                structType.Members.Add(new StructMember { Name = key, Type = typeHandler.GetYdbType(o) });
             }
         }
         else
@@ -65,7 +65,7 @@ public sealed class StructHandler : ContainerHandlerBase<IDictionary<string, obj
 
     public override TAny ReadContainerAs<TAny>(Value value, FieldDescription? fieldDescription)
     {
-        if (typeof(TAny) == typeof(Dictionary<string, Object?>))
+        if (typeof(TAny) == typeof(Dictionary<string, object?>))
             return (TAny)Read(value, fieldDescription);
 
         Debug.Assert(Mapper != null, nameof(Mapper) + " != null");

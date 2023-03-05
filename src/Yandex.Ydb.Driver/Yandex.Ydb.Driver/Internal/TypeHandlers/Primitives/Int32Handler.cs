@@ -15,12 +15,14 @@ public sealed class Int32Handler : YdbPrimitiveTypeHandler<int>
     {
         dest.Int32Value = Convert.ToInt32(value);
     }
-    
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Int32
+            TypeId = Type.Types.PrimitiveTypeId.Int32
         };
+    }
 
     public override void Write(bool value, Value dest)
     {

@@ -1,40 +1,13 @@
-using System.Dynamic;
 using Yandex.Ydb.Driver.Helpers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Ydb;
-using Type = System.Type;
+using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Tests;
 
 public class CustomMappingTests
 {
-    public class TestStructClassMapping : IUserTypeMapping
-    {
-        public global::Ydb.Type YdbType { get; } = new global::Ydb.Type() { StructType = new StructType() { } };
-        public Type ClrType => typeof(TestStructClass);
-
-        public YdbTypeHandler CreateHandler() => new TestStructClassHandler();
-    }
-
-    public class TestStructClassHandler : YdbTypeHandler<TestStructClass>
-    {
-        public override TestStructClass Read(Value value, FieldDescription? fieldDescription = null)
-        {
-            return new TestStructClass(value.Items[0].GetInt32(), value.Items[1].GetString());
-        }
-
-        public override void Write(TestStructClass value, Value dest)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-            new global::Ydb.Type() { StructType = new StructType() { } };
-    }
-
-    public record TestStructClass(int Index, string? Name);
-
     [Fact]
     public void AddedCustomMapping_UsingDuringReading()
     {
@@ -60,6 +33,37 @@ SELECT AsStruct(
 
         Assert.Equal(new TestStructClass(123, "TestName"), lsit);
     }
+
+    public class TestStructClassMapping : IUserTypeMapping
+    {
+        public Type YdbType { get; } = new() { StructType = new StructType() };
+        public System.Type ClrType => typeof(TestStructClass);
+
+        public YdbTypeHandler CreateHandler()
+        {
+            return new TestStructClassHandler();
+        }
+    }
+
+    public class TestStructClassHandler : YdbTypeHandler<TestStructClass>
+    {
+        public override TestStructClass Read(Value value, FieldDescription? fieldDescription = null)
+        {
+            return new TestStructClass(value.Items[0].GetInt32(), value.Items[1].GetString());
+        }
+
+        public override void Write(TestStructClass value, Value dest)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+        {
+            return new Type { StructType = new StructType() };
+        }
+    }
+
+    public record TestStructClass(int Index, string? Name);
 }
 
 public class DataSourceTests
@@ -86,11 +90,11 @@ SELECT AsStruct(
         var lsit = reader.GetFieldValue<Dictionary<string, object?>>(0);
         Assert.NotNull(lsit);
 
-        Assert.Equal(new Dictionary<string, Object>()
+        Assert.Equal(new Dictionary<string, object>
         {
             { "a", 1 },
             { "b", 2 },
-            { "c", new Dictionary<string, Object>() { { "a", 1 } } },
+            { "c", new Dictionary<string, object> { { "a", 1 } } }
         }, lsit);
     }
 
@@ -116,11 +120,11 @@ SELECT AsStruct(
         var lsit = reader.GetFieldValue<Dictionary<string, object?>>(0);
         Assert.NotNull(lsit);
 
-        Assert.Equal(new Dictionary<string, Object>()
+        Assert.Equal(new Dictionary<string, object>
         {
             { "a", 1 },
             { "b", 2 },
-            { "c", "3" },
+            { "c", "3" }
         }, lsit);
     }
 
@@ -180,14 +184,14 @@ DECLARE $lst as Dict<String, Int32>;
 SELECT $lst AS `dict`;";
 
         var dbCommand = dataSource.CreateCommand(yql);
-        dbCommand.AddParameter("$lst", new Dictionary<string, int>() { { "a", 1 }, { "b", 2 }, { "c", 3 } });
+        dbCommand.AddParameter("$lst", new Dictionary<string, int> { { "a", 1 }, { "b", 2 }, { "c", 3 } });
         var reader = dbCommand.ExecuteReader();
         var read = reader.Read();
         Assert.True(read);
 
         var lsit = reader.GetFieldValue<Dictionary<string, int>>(0);
         Assert.NotNull(lsit);
-        Assert.Equal(new Dictionary<string, int>() { { "a", 1 }, { "b", 2 }, { "c", 3 } }, lsit);
+        Assert.Equal(new Dictionary<string, int> { { "a", 1 }, { "b", 2 }, { "c", 3 } }, lsit);
     }
 
     [Fact(Skip = "CURRENTLY IT'S NOT WORKING IN YDB AND RETURNS ERROR INSTEAD OF CORRECT RESULT. WAIT FOR FIX")]
@@ -205,9 +209,9 @@ SELECT AsDict() AS `dict`;";
         var read = reader.Read();
         Assert.True(read);
 
-        var lsit = reader.GetFieldValue<Dictionary<string, Int32>>(0);
+        var lsit = reader.GetFieldValue<Dictionary<string, int>>(0);
         Assert.NotNull(lsit);
-        Assert.Equal(new Dictionary<string, int>() { }, lsit);
+        Assert.Equal(new Dictionary<string, int>(), lsit);
     }
 
     [Fact]
@@ -225,9 +229,9 @@ SELECT DictCreate(String, Int32) AS `dict`;";
         var read = reader.Read();
         Assert.True(read);
 
-        var lsit = reader.GetFieldValue<Dictionary<string, Int32>>(0);
+        var lsit = reader.GetFieldValue<Dictionary<string, int>>(0);
         Assert.NotNull(lsit);
-        Assert.Equal(new Dictionary<string, int>() { }, lsit);
+        Assert.Equal(new Dictionary<string, int>(), lsit);
     }
 
     [Fact]
@@ -249,9 +253,9 @@ SELECT AsDict(
         var read = reader.Read();
         Assert.True(read);
 
-        var lsit = reader.GetFieldValue<Dictionary<string, Int32>>(0);
+        var lsit = reader.GetFieldValue<Dictionary<string, int>>(0);
         Assert.NotNull(lsit);
-        Assert.Equal(new Dictionary<string, int>() { { "a", 1 }, { "b", 2 }, { "c", 3 } }, lsit);
+        Assert.Equal(new Dictionary<string, int> { { "a", 1 }, { "b", 2 }, { "c", 3 } }, lsit);
     }
 
     [Fact]
@@ -271,7 +275,7 @@ SELECT $lst AS `list`;";
         var read = reader.Read();
         Assert.True(read);
 
-        var lsit = reader.GetFieldValue<List<Int32>>(0);
+        var lsit = reader.GetFieldValue<List<int>>(0);
         Assert.NotNull(lsit);
         Assert.Equal(new[] { 1, 2, 3 }, lsit);
     }
@@ -288,12 +292,12 @@ DECLARE $lst as List<Int32>;
 SELECT $lst AS `list`;";
 
         var dbCommand = dataSource.CreateCommand(yql);
-        dbCommand.AddParameter("$lst", new List<int>() { 1, 2, 3 });
+        dbCommand.AddParameter("$lst", new List<int> { 1, 2, 3 });
         var reader = dbCommand.ExecuteReader();
         var read = reader.Read();
         Assert.True(read);
 
-        var lsit = reader.GetFieldValue<List<Int32>>(0);
+        var lsit = reader.GetFieldValue<List<int>>(0);
         Assert.NotNull(lsit);
         Assert.Equal(new[] { 1, 2, 3 }, lsit);
     }
@@ -314,11 +318,11 @@ SELECT $lst AS `list`;";
         Assert.True(read);
 
 
-        var enumerable = reader.GetFieldValue<IEnumerable<Int32>>(0);
+        var enumerable = reader.GetFieldValue<IEnumerable<int>>(0);
         Assert.NotNull(enumerable);
         Assert.Equal(new[] { 1, 2, 3 }, enumerable);
 
-        var lsit = reader.GetFieldValue<List<Int32>>(0);
+        var lsit = reader.GetFieldValue<List<int>>(0);
         Assert.NotNull(lsit);
         Assert.Equal(new[] { 1, 2, 3 }, lsit);
     }
@@ -339,9 +343,9 @@ SELECT $lst AS `list`;";
         var read = reader.Read();
         Assert.True(read);
 
-        var example = new List<List<int>>() { new List<int>() { 1, 2, 3 }, new List<int>() { 1, 2, 3 } };
+        var example = new List<List<int>> { new() { 1, 2, 3 }, new() { 1, 2, 3 } };
 
-        var lsit = reader.GetFieldValue<List<List<Int32>>>(0);
+        var lsit = reader.GetFieldValue<List<List<int>>>(0);
         Assert.NotNull(lsit);
         Assert.Equal(example, lsit);
 

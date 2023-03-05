@@ -15,7 +15,7 @@ public class ServiceAccountTokenProvider : ICredentialsProvider
     }
 
     /// <summary>
-    /// Constructs new ServiceAccountTokenProvider
+    ///     Constructs new ServiceAccountTokenProvider
     /// </summary>
     /// <param name="pathToFile">Full path to .json file with private and public keys</param>
     public ServiceAccountTokenProvider(string pathToFile)

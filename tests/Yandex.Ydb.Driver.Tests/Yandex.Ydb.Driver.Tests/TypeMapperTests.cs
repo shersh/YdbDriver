@@ -9,42 +9,42 @@ public class TypeMapperTests
     [Fact]
     public void Int64Handler_WriteInt64Value()
     {
-        var tv = new TypedValue()
+        var tv = new TypedValue
         {
-            Type = new Type() { TypeId = Type.Types.PrimitiveTypeId.Int32 },
-            Value = new Value() { }
+            Type = new Type { TypeId = Type.Types.PrimitiveTypeId.Int32 },
+            Value = new Value()
         };
 
         var handler = new Int64Handler();
         handler.Write(321321, tv.Value);
         Assert.Equal(321321, tv.Value.Int64Value);
-        
+
         handler.Write("1111", tv.Value);
         Assert.Equal(1111, tv.Value.Int64Value);
-        
+
         handler.Write(true, tv.Value);
         Assert.Equal(1, tv.Value.Int64Value);
-        
+
         handler.Write(1.0, tv.Value);
         Assert.Equal(1, tv.Value.Int64Value);
     }
-    
+
     [Fact]
     public void Int32Handler_writeIntValue()
     {
-        var tv = new TypedValue()
+        var tv = new TypedValue
         {
-            Type = new Type() { TypeId = Type.Types.PrimitiveTypeId.Int32 },
-            Value = new Value() { }
+            Type = new Type { TypeId = Type.Types.PrimitiveTypeId.Int32 },
+            Value = new Value()
         };
 
         var handler = new Int32Handler();
         handler.Write(321321, tv.Value);
         Assert.Equal(321321, tv.Value.Int32Value);
-        
+
         handler.Write("1111", tv.Value);
         Assert.Equal(1111, tv.Value.Int32Value);
-        
+
         handler.Write(true, tv.Value);
         Assert.Equal(1, tv.Value.Int32Value);
     }
@@ -52,10 +52,10 @@ public class TypeMapperTests
     [Fact]
     public void Int32Handler_ReturnsIntValue()
     {
-        var tv = new TypedValue()
+        var tv = new TypedValue
         {
-            Type = new Type() { TypeId = Type.Types.PrimitiveTypeId.Int32 },
-            Value = new Value() { Int32Value = 123123 }
+            Type = new Type { TypeId = Type.Types.PrimitiveTypeId.Int32 },
+            Value = new Value { Int32Value = 123123 }
         };
 
         var handler = new Int32Handler();

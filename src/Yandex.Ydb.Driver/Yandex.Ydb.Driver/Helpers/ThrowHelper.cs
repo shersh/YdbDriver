@@ -33,7 +33,7 @@ public static class ThrowHelper
     {
         ThrowDriverException(new InvalidDataException(msg));
     }
-    
+
     [DoesNotReturn]
     public static void FileNotFound(string msg, string filename)
     {

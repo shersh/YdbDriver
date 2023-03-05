@@ -9,7 +9,7 @@ public sealed class DecimalHandler : YdbTypeHandler<decimal>, IYdbSimpleTypeHand
     public override decimal Read(Value value, FieldDescription? fieldDescription = null)
     {
         var decimalType = fieldDescription!.Type.DecimalType;
-        return decimal.Round(Convert.ToDecimal(value.Low128) / ((ulong)Math.Pow(10, decimalType.Scale)),
+        return decimal.Round(Convert.ToDecimal(value.Low128) / (ulong)Math.Pow(10, decimalType.Scale),
             (int)decimalType.Precision);
     }
 
@@ -18,12 +18,14 @@ public sealed class DecimalHandler : YdbTypeHandler<decimal>, IYdbSimpleTypeHand
         throw new NotImplementedException();
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            DecimalType = new DecimalType()
+            DecimalType = new DecimalType
             {
                 //TODO: Add here values
             }
         };
+    }
 }

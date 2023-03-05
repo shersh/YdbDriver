@@ -13,9 +13,7 @@ internal sealed class UserDefinedTypeHandlerResolver : TypeHandlerResolver
         _handlersByClrType = new ConcurrentDictionary<Type, YdbTypeHandler>();
         if (typeMappings != null)
             foreach (var mapping in typeMappings)
-            {
                 AddTypeMapping(mapping);
-            }
     }
 
     internal void AddTypeMapping(IUserTypeMapping typeMapping)
@@ -29,7 +27,7 @@ internal sealed class UserDefinedTypeHandlerResolver : TypeHandlerResolver
         return null;
     }
 
-    public override YdbTypeHandler? ResolveByClrType(System.Type type)
+    public override YdbTypeHandler? ResolveByClrType(Type type)
     {
         _handlersByClrType.TryGetValue(type, out var handler);
         return handler;

@@ -9,12 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dapper" Version="2.0.123" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.2" />
-        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.26.0" />
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.26.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
-        <PackageReference Include="xunit" Version="2.4.2" />
+        <PackageReference Include="Dapper" Version="2.0.123"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.2"/>
+        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.26.0"/>
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.26.0"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2"/>
+        <PackageReference Include="xunit" Version="2.4.2"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -26,16 +26,16 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj" />
+        <ProjectReference Include="..\..\..\src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="certs\key.pem">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="certs\cert.pem">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="certs\key.pem">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="certs\cert.pem">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

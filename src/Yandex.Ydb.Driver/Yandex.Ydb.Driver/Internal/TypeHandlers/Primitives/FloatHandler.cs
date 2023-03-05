@@ -15,9 +15,11 @@ public sealed class FloatHandler : YdbTypeHandler<float>, IYdbSimpleTypeHandler<
         dest.FloatValue = value;
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Float
+            TypeId = Type.Types.PrimitiveTypeId.Float
         };
+    }
 }

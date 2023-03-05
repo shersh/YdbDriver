@@ -17,9 +17,11 @@ public sealed class YsonHandler : YdbTypeHandler<string>, IYdbSimpleTypeHandler<
         dest.BytesValue = ByteString.CopyFromUtf8(value);
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Yson
+            TypeId = Type.Types.PrimitiveTypeId.Yson
         };
+    }
 }

@@ -18,7 +18,7 @@ public abstract class YdbTypeHandler
             IYdbJsonTypeHandler jsonTypeHandler => jsonTypeHandler.ReadJson<TAny>(value, fieldDescription),
             IContainerHandler containerHandler => containerHandler.ReadContainerAs<TAny>(value, fieldDescription),
             _ => throw new NotSupportedException(
-                $"Handler `{this.GetType().Name}` does not implement reading for type `{typeof(TAny).Name}`")
+                $"Handler `{GetType().Name}` does not implement reading for type `{typeof(TAny).Name}`")
         };
     }
 
@@ -69,7 +69,7 @@ public abstract class YdbTypeHandler<TDefault> : YdbTypeHandler, IYdbTypeHandler
         {
             var type = new global::Ydb.Type
             {
-                OptionalType = new OptionalType()
+                OptionalType = new OptionalType
                 {
                     Item = GetYdbTypeInternal(value)
                 }

@@ -1,5 +1,6 @@
 ﻿using Yandex.Ydb.Driver.Helpers;
 using Ydb;
+using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 
@@ -9,12 +10,14 @@ public sealed class BoolHandler : YdbPrimitiveTypeHandler<bool>
     {
         return value.GetBool();
     }
-    
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Bool
+            TypeId = Type.Types.PrimitiveTypeId.Bool
         };
+    }
 
     protected override void WriteAsObject(object value, Value dest)
     {

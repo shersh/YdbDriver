@@ -16,9 +16,11 @@ public sealed class DateTimeHandler : YdbTypeHandler<DateTime>, IYdbSimpleTypeHa
         dest.Int64Value = new DateTimeOffset(value).ToUnixTimeSeconds();
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Datetime
+            TypeId = Type.Types.PrimitiveTypeId.Datetime
         };
+    }
 }

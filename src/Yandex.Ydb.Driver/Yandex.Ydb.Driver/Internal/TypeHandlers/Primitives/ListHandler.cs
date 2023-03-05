@@ -1,15 +1,12 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using Ydb;
+using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 
 public sealed class ListHandler : ContainerHandlerBase<IEnumerable>
 {
-    public ListHandler()
-    {
-    }
-
     public override IEnumerable Read(Value value, FieldDescription? fieldDescription = null)
     {
         var handlerItem = Mapper!.ResolveByYdbType(fieldDescription!.Type.ListType.Item);
@@ -31,10 +28,7 @@ public sealed class ListHandler : ContainerHandlerBase<IEnumerable>
     {
         var handlerItem = Mapper!.ResolveByYdbType(fieldDescription!.Type.ListType.Item);
         var type = typeof(TAny);
-        if (type.IsAbstract || type.IsInterface)
-        {
-            return (TAny)Read(value, fieldDescription);
-        }
+        if (type.IsAbstract || type.IsInterface) return (TAny)Read(value, fieldDescription);
 
         var collection = Activator.CreateInstance(type);
         if (collection is not IList list)
@@ -74,15 +68,15 @@ public sealed class ListHandler : ContainerHandlerBase<IEnumerable>
         }
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
     {
         Debug.Assert(Mapper != null, nameof(Mapper) + " != null");
         var type = typeof(TDefault);
         var definition = type.IsArray ? type.GetElementType()! : type.GetGenericArguments()[0];
 
-        return new global::Ydb.Type
+        return new Type
         {
-            ListType = new ListType()
+            ListType = new ListType
             {
                 Item = Mapper.ResolveByClrType(definition)
                     .GetYdbType(value)

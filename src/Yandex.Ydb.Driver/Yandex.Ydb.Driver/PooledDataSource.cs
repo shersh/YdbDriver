@@ -1,18 +1,21 @@
-﻿using System.Collections.Concurrent;
-
-namespace Yandex.Ydb.Driver;
+﻿namespace Yandex.Ydb.Driver;
 
 internal sealed class PooledDataSource : YdbDataSource
 {
     private readonly List<IAsyncDisposable> _disposables = new();
-    private bool _isBootstrapped = false;
     private YdbConnector _connector;
+
+    private long _currentSessions;
+    private bool _isBootstrapped;
     private ISessionPool _sessionPool;
 
     internal PooledDataSource(YDbConnectionStringBuilder connectionStringBuilder, YdbDataSourceConfiguration config) :
         base(connectionStringBuilder, config)
     {
     }
+
+    public override (long, long, long) Statistics =>
+        (Interlocked.Read(ref _currentSessions), 0, 0);
 
     internal override async ValueTask<YdbConnector> Get(YdbConnection conn, TimeSpan timeout,
         CancellationToken cancellationToken)
@@ -24,11 +27,6 @@ internal sealed class PooledDataSource : YdbDataSource
         return _connector;
     }
 
-    public override (long, long, long) Statistics =>
-        (Interlocked.Read(ref _currentSessions), 0, 0);
-
-    private long _currentSessions;
-
     internal override async ValueTask Bootstrap()
     {
         if (_isBootstrapped)
@@ -36,7 +34,7 @@ internal sealed class PooledDataSource : YdbDataSource
 
         _isBootstrapped = true;
         _connector = await OpenNewConnector(TimeSpan.FromSeconds(60), CancellationToken.None);
-        _sessionPool = new SessionPool(_connector, this.Settings.MaxSessions);
+        _sessionPool = new SessionPool(_connector, Settings.MaxSessions);
         await _sessionPool.Initialize(Settings.Database);
 
         await base.Bootstrap();
@@ -50,13 +48,11 @@ internal sealed class PooledDataSource : YdbDataSource
     internal override async ValueTask ReturnAsync(string session)
     {
         _sessionPool.Return(session);
-        return;
     }
 
     internal override void Return(string session)
     {
         _sessionPool.Return(session);
-        return;
     }
 
     private async ValueTask<YdbConnector> OpenNewConnector(TimeSpan timeout,

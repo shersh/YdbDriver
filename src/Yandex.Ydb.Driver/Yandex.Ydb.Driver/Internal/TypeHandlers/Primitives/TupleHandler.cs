@@ -1,15 +1,13 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.Dynamic;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Ydb;
-using Type = Ydb.Type;
+using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 
 public sealed class TupleHandler : ContainerHandlerBase<ITuple>
 {
-    private System.Type GetGenericTupleType(FieldDescription tupleInfo)
+    private Type GetGenericTupleType(FieldDescription tupleInfo)
     {
         return tupleInfo.Type.TupleType.Elements.Count switch
         {
@@ -54,14 +52,14 @@ public sealed class TupleHandler : ContainerHandlerBase<ITuple>
         throw new NotImplementedException();
     }
 
-    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
     {
         var tupleType = new TupleType();
         var arguments = typeof(TDefault).GetGenericArguments();
         var elements = arguments.Select(x => Mapper.ResolveByClrType(x).GetYdbType(value));
         tupleType.Elements.Add(elements);
 
-        return new Type()
+        return new global::Ydb.Type
         {
             TupleType = tupleType
         };
@@ -99,7 +97,7 @@ public sealed class TupleHandler : ContainerHandlerBase<ITuple>
         var tupleValueTypes = tupleType.GetGenericArguments();
         var tupleValueHandlers = tupleValueTypes.Select(x => Mapper.ResolveByClrType(x)).ToArray();
 
-        for (int i = 0; i < tuple.Length; i++)
+        for (var i = 0; i < tuple.Length; i++)
         {
             var val = new Value();
             tupleValueHandlers[i].Write(tuple[i], val);

@@ -11,17 +11,19 @@ public sealed class Int64Handler : YdbPrimitiveTypeHandler<long>
         dest.Int64Value = Convert.ToInt64(value);
     }
 
-    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
             TypeId = Type.Types.PrimitiveTypeId.Int64
         };
+    }
 
     protected override void WriteAsObject(object value, Value dest)
     {
         dest.Int64Value = Convert.ToInt64(value);
     }
-    
+
     public override void Write(bool value, Value dest)
     {
         dest.Int64Value = Convert.ToInt64(value);

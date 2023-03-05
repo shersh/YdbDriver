@@ -1,7 +1,5 @@
 using System.Diagnostics;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Yandex.Ydb.Driver;
 
 namespace ShortenLinks.Controllers;
 
@@ -11,8 +9,8 @@ public record TaskToWork(string MethodName, string[] Arguments);
 [ApiController]
 public class TaskController : ControllerBase
 {
-    private readonly ITaskRepository _repository;
     private readonly ILogger<TaskController> _log;
+    private readonly ITaskRepository _repository;
 
     public TaskController(ITaskRepository repository, ILogger<TaskController> log)
     {

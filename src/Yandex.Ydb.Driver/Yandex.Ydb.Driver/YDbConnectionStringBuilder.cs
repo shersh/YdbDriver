@@ -259,6 +259,6 @@ public class YDbConnectionStringBuilder : DbConnectionStringBuilder
 
     internal YDbConnectionStringBuilder Clone()
     {
-        return new(ConnectionString);
+        return new YDbConnectionStringBuilder(ConnectionString);
     }
 }

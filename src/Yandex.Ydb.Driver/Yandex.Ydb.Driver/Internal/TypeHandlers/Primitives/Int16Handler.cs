@@ -1,21 +1,24 @@
 ﻿using Yandex.Ydb.Driver.Helpers;
 using Ydb;
+using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 
 public sealed class Int16Handler : YdbPrimitiveTypeHandler<short>
 {
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Int16
+            TypeId = Type.Types.PrimitiveTypeId.Int16
         };
-    
+    }
+
     protected override void WriteAsObject(object value, Value dest)
     {
         dest.Int32Value = Convert.ToInt16(value);
     }
-    
+
     public override void Write(byte value, Value dest)
     {
         dest.Int32Value = Convert.ToInt16(value);

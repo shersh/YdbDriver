@@ -9,17 +9,18 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class YdbServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers an <see cref="YdbDataSource" /> and an <see cref="YdbConnection" /> in the <see cref="IServiceCollection" />.
+    ///     Registers an <see cref="YdbDataSource" /> and an <see cref="YdbConnection" /> in the
+    ///     <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="connectionString">An Ydb connection string.</param>
     /// <param name="connectionLifetime">
-    /// The lifetime with which to register the <see cref="YdbConnection" /> in the container.
-    /// Defaults to <see cref="ServiceLifetime.Scoped" />.
+    ///     The lifetime with which to register the <see cref="YdbConnection" /> in the container.
+    ///     Defaults to <see cref="ServiceLifetime.Scoped" />.
     /// </param>
     /// <param name="dataSourceLifetime">
-    /// The lifetime with which to register the <see cref="YdbDataSource" /> service in the container.
-    /// Defaults to <see cref="ServiceLifetime.Singleton" />.
+    ///     The lifetime with which to register the <see cref="YdbDataSource" /> service in the container.
+    ///     Defaults to <see cref="ServiceLifetime.Singleton" />.
     /// </param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
     public static IServiceCollection AddYdbDataSource(
@@ -27,8 +28,10 @@ public static class YdbServiceCollectionExtensions
         string connectionString,
         ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
         ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton)
-        => AddYdbDataSourceCore(
-            serviceCollection, connectionString, dataSourceBuilderAction: null, connectionLifetime, dataSourceLifetime);
+    {
+        return AddYdbDataSourceCore(
+            serviceCollection, connectionString, null, connectionLifetime, dataSourceLifetime);
+    }
 
     public static IServiceCollection AddYdbDataSource(
         this IServiceCollection serviceCollection,
@@ -36,25 +39,29 @@ public static class YdbServiceCollectionExtensions
         Action<YdbDataSourceBuilder> dataSourceBuilderAction,
         ServiceLifetime connectionLifetime = ServiceLifetime.Transient,
         ServiceLifetime dataSourceLifetime = ServiceLifetime.Singleton)
-        => AddYdbDataSourceCore(serviceCollection, connectionString, dataSourceBuilderAction, connectionLifetime,
+    {
+        return AddYdbDataSourceCore(serviceCollection, connectionString, dataSourceBuilderAction, connectionLifetime,
             dataSourceLifetime);
+    }
 
 
     /// <summary>
-    /// Registers an <see cref="YdbDataSource" /> and an <see cref="YdbConnection" /> in the <see cref="IServiceCollection" />.
+    ///     Registers an <see cref="YdbDataSource" /> and an <see cref="YdbConnection" /> in the
+    ///     <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="serviceCollection">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="connectionString">An Ydb connection string.</param>
     /// <param name="dataSourceBuilderAction">
-    /// An action to configure the <see cref="YdbDataSourceBuilder" /> for further customizations of the <see cref="YdbDataSource" />.
+    ///     An action to configure the <see cref="YdbDataSourceBuilder" /> for further customizations of the
+    ///     <see cref="YdbDataSource" />.
     /// </param>
     /// <param name="connectionLifetime">
-    /// The lifetime with which to register the <see cref="YdbConnection" /> in the container.
-    /// Defaults to <see cref="ServiceLifetime.Scoped" />.
+    ///     The lifetime with which to register the <see cref="YdbConnection" /> in the container.
+    ///     Defaults to <see cref="ServiceLifetime.Scoped" />.
     /// </param>
     /// <param name="dataSourceLifetime">
-    /// The lifetime with which to register the <see cref="YdbDataSource" /> service in the container.
-    /// Defaults to <see cref="ServiceLifetime.Singleton" />.
+    ///     The lifetime with which to register the <see cref="YdbDataSource" /> service in the container.
+    ///     Defaults to <see cref="ServiceLifetime.Singleton" />.
     /// </param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
     private static IServiceCollection AddYdbDataSourceCore(IServiceCollection serviceCollection,
@@ -78,7 +85,7 @@ public static class YdbServiceCollectionExtensions
         return serviceCollection;
     }
 
-    static void AddCommonServices(
+    private static void AddCommonServices(
         IServiceCollection serviceCollection,
         ServiceLifetime connectionLifetime,
         ServiceLifetime dataSourceLifetime)

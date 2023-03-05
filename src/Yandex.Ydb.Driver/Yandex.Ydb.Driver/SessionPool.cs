@@ -8,11 +8,15 @@ namespace Yandex.Ydb.Driver;
 public sealed class SessionPool : ISessionPool
 {
     private readonly YdbConnector _connector;
-    private readonly int _maxSessions;
-    private readonly object _lck = new object();
 
-    private readonly Queue<string> _idle = new Queue<string>();
+    private readonly Queue<string> _idle = new();
+    private readonly object _lck = new();
+    private readonly int _maxSessions;
     private readonly Dictionary<string, Session> _sessions;
+
+    private readonly CreateSessionRequest createRequest = new();
+
+    private readonly SemaphoreSlim semaphoreSlim;
 
     internal SessionPool(YdbConnector connector, int maxSessions)
     {
@@ -22,16 +26,14 @@ public sealed class SessionPool : ISessionPool
         _sessions = new Dictionary<string, Session>(maxSessions);
     }
 
-    private SemaphoreSlim semaphoreSlim;
-
     async Task ISessionPool.Initialize(string database)
     {
-        for (int i = 0; i < _maxSessions; i++)
+        for (var i = 0; i < _maxSessions; i++)
         {
             var response = await _connector.UnaryCallAsync(TableService.CreateSessionMethod, createRequest,
-                new CallOptions(new Metadata()
+                new CallOptions(new Metadata
                 {
-                    { YdbMetadata.RpcDatabaseHeader, database },
+                    { YdbMetadata.RpcDatabaseHeader, database }
                 }));
 
             lock (_lck)
@@ -50,16 +52,11 @@ public sealed class SessionPool : ISessionPool
 
         lock (_lck)
         {
-            if (_idle.TryDequeue(out var session))
-            {
-                return session;
-            }
+            if (_idle.TryDequeue(out var session)) return session;
         }
 
         throw new YdbDriverException("No idle session");
     }
-
-    private CreateSessionRequest createRequest = new CreateSessionRequest();
 
     void ISessionPool.Return(string sessionId)
     {
@@ -78,8 +75,8 @@ public sealed class SessionPool : ISessionPool
             foreach (var (key, value) in _sessions)
             {
                 var response = _connector.UnaryCall(TableService.DeleteSessionMethod,
-                    new DeleteSessionRequest() { SessionId = key },
-                    new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, value.Database } }) { });
+                    new DeleteSessionRequest { SessionId = key },
+                    new CallOptions(new Metadata { { YdbMetadata.RpcDatabaseHeader, value.Database } }));
             }
         }
 

@@ -8,7 +8,7 @@ public static class TestHelper
         var connection = source.CreateConnection();
 
         connection.Open();
-        
+
         return connection;
     }
 }

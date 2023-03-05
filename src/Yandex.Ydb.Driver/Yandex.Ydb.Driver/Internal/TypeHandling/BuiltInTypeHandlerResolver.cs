@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Yandex.Ydb.Driver.Internal.TypeHandlers;
+﻿using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Yandex.Ydb.Driver.Types.Primitives;
@@ -34,11 +33,6 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
 
     private static readonly Utf8Handler UnknownHandler = new();
 
-    private readonly ListHandler _listHandler = new();
-    private readonly DictionaryHandler _dictHandler = new();
-    private readonly TupleHandler _tupleHandler = new();
-    private readonly StructHandler _structHandler = new();
-
     private static readonly IReadOnlyDictionary<Type.Types.PrimitiveTypeId, YdbTypeHandler> YdbTypeToHandlerTable =
         new Dictionary<Type.Types.PrimitiveTypeId, YdbTypeHandler>
         {
@@ -66,27 +60,45 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
             { Type.Types.PrimitiveTypeId.Interval, UnknownHandler },
             { Type.Types.PrimitiveTypeId.TzDate, UnknownHandler },
             { Type.Types.PrimitiveTypeId.TzDatetime, UnknownHandler },
-            { Type.Types.PrimitiveTypeId.TzTimestamp, UnknownHandler },
+            { Type.Types.PrimitiveTypeId.TzTimestamp, UnknownHandler }
         };
 
     private static readonly Dictionary<System.Type, YdbTypeHandler> ClrTypeToDataYdbTypeHandlers;
+
+    private static readonly HashSet<System.Type> ValueTupleTypes = new(new[]
+    {
+        typeof(Tuple<>),
+        typeof(Tuple<,>),
+        typeof(Tuple<,,>),
+        typeof(Tuple<,,,>),
+        typeof(Tuple<,,,,>),
+        typeof(Tuple<,,,,,>),
+        typeof(Tuple<,,,,,,>),
+        typeof(Tuple<,,,,,,,>)
+    });
+
+    private readonly DictionaryHandler _dictHandler = new();
+
+    private readonly ListHandler _listHandler = new();
+    private readonly StructHandler _structHandler = new();
+    private readonly TupleHandler _tupleHandler = new();
 
     static BuiltInTypeHandlerResolver()
     {
         ClrTypeToDataYdbTypeHandlers = new Dictionary<System.Type, YdbTypeHandler>
         {
-            { typeof(Int32), Int32Handler },
+            { typeof(int), Int32Handler },
             { typeof(bool), BoolHandler },
             { typeof(byte), Int8Handler },
             { typeof(sbyte), UInt8Handler },
-            { typeof(Int16), Int16Handler },
-            { typeof(UInt16), UInt16Handler },
-            { typeof(UInt32), UInt32Handler },
-            { typeof(Int64), Int64Handler },
-            { typeof(UInt64), Uint64Handler },
+            { typeof(short), Int16Handler },
+            { typeof(ushort), UInt16Handler },
+            { typeof(uint), UInt32Handler },
+            { typeof(long), Int64Handler },
+            { typeof(ulong), Uint64Handler },
             { typeof(float), FloatHandler },
-            { typeof(Double), DoubleHandler },
-            { typeof(String), TextTypeHandler },
+            { typeof(double), DoubleHandler },
+            { typeof(string), TextTypeHandler },
             { typeof(Guid), GuidHandler },
             { typeof(DateOnly), DateOnlyHandler },
             { typeof(DateTime), DateTimeHandler },
@@ -94,7 +106,7 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
             { typeof(Timestamp), TimstampHandler },
             { typeof(Utf8String), Utf8Handler },
 
-            { typeof(JsonValue), JsonHandler },
+            { typeof(JsonValue), JsonHandler }
 
 
             // { typeof(Timestamp), TimstanpHandler },
@@ -112,7 +124,10 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
         };
     }
 
-    public override YdbTypeHandler? ResolveByYdbType(Type type) => ResolveByYdbTypeInternal(type, 0);
+    public override YdbTypeHandler? ResolveByYdbType(Type type)
+    {
+        return ResolveByYdbTypeInternal(type, 0);
+    }
 
     private YdbTypeHandler? ResolveByYdbTypeInternal(Type type, int recursion)
     {
@@ -158,41 +173,19 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
 
     public override YdbTypeHandler? ResolveByClrType(System.Type type)
     {
-        if (type.IsArray)
-        {
-            return _listHandler;
-        }
+        if (type.IsArray) return _listHandler;
 
         if (type.IsGenericType)
         {
             var genericTypeDefinition = type.GetGenericTypeDefinition();
 
             if (genericTypeDefinition == typeof(List<>))
-            {
                 return _listHandler;
-            }
-            else if (genericTypeDefinition == typeof(Dictionary<,>))
-            {
+            if (genericTypeDefinition == typeof(Dictionary<,>))
                 return _dictHandler;
-            }
-            else if (ValueTupleTypes.Contains(genericTypeDefinition))
-            {
-                return _tupleHandler;
-            }
+            if (ValueTupleTypes.Contains(genericTypeDefinition)) return _tupleHandler;
         }
 
         return ClrTypeToDataYdbTypeHandlers.TryGetValue(type, out var handler) ? handler : null;
     }
-
-    private static readonly HashSet<System.Type> ValueTupleTypes = new HashSet<System.Type>(new System.Type[]
-    {
-        typeof(Tuple<>),
-        typeof(Tuple<,>),
-        typeof(Tuple<,,>),
-        typeof(Tuple<,,,>),
-        typeof(Tuple<,,,,>),
-        typeof(Tuple<,,,,,>),
-        typeof(Tuple<,,,,,,>),
-        typeof(Tuple<,,,,,,,>)
-    });
 }

@@ -9,8 +9,8 @@ namespace Yandex.Ydb.Driver;
 internal sealed class UnpooledYdbDataSource : YdbDataSource
 {
     private readonly List<IAsyncDisposable> _disposables = new();
-    private bool _isBootstrapped = false;
     private YdbConnector _connector;
+    private bool _isBootstrapped;
 
     /// <inheritdoc />
     public UnpooledYdbDataSource(YDbConnectionStringBuilder settings, YdbDataSourceConfiguration config) : base(
@@ -62,7 +62,7 @@ internal sealed class UnpooledYdbDataSource : YdbDataSource
         {
             var request = new CreateSessionRequest();
             var response = await _connector.UnaryCallAsync(TableService.CreateSessionMethod, request,
-                new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, database } }));
+                new CallOptions(new Metadata { { YdbMetadata.RpcDatabaseHeader, database } }));
             var result = response.Operation.GetResult<CreateSessionResult>();
             return result.SessionId;
         }
@@ -75,14 +75,14 @@ internal sealed class UnpooledYdbDataSource : YdbDataSource
     internal override void Return(string session)
     {
         _connector.UnaryCall(TableService.DeleteSessionMethod, new DeleteSessionRequest { SessionId = session },
-            new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, Settings.Database } }));
+            new CallOptions(new Metadata { { YdbMetadata.RpcDatabaseHeader, Settings.Database } }));
     }
 
     internal override async ValueTask ReturnAsync(string session)
     {
         await _connector.UnaryCallAsync(TableService.DeleteSessionMethod,
             new DeleteSessionRequest { SessionId = session },
-            new CallOptions(new Metadata() { { YdbMetadata.RpcDatabaseHeader, Settings.Database } }));
+            new CallOptions(new Metadata { { YdbMetadata.RpcDatabaseHeader, Settings.Database } }));
     }
 
     private async ValueTask<YdbConnector> OpenNewConnector(TimeSpan timeout,

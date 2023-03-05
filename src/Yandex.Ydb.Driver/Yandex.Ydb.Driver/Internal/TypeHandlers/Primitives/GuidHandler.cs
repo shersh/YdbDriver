@@ -51,6 +51,14 @@ public sealed class GuidHandler : YdbTypeHandler<Guid>
         dest.High128 = (ulong)high;
     }
 
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
+        {
+            TypeId = Type.Types.PrimitiveTypeId.Uuid
+        };
+    }
+
     [StructLayout(LayoutKind.Explicit)]
     private struct GuidConverter
     {
@@ -59,10 +67,4 @@ public sealed class GuidHandler : YdbTypeHandler<Guid>
         [FieldOffset(0)] public long Long1;
         [FieldOffset(8)] public long Long2;
     }
-
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
-        {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Uuid
-        };
 }

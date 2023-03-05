@@ -8,20 +8,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dapper" Version="2.0.123" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.2" />
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.3" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-        <PackageReference Include="Yandex.Ydb.DependencyInjection" Version="1.0.0" />
+        <PackageReference Include="Dapper" Version="2.0.123"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.2"/>
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.3"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+        <PackageReference Include="Yandex.Ydb.DependencyInjection" Version="1.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection.csproj" />
-      <ProjectReference Include="..\..\src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj" />
+        <ProjectReference Include="..\..\src\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection\Yandex.Ydb.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\..\src\Yandex.Ydb.Driver\Yandex.Ydb.Driver\Yandex.Ydb.Driver.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers" />
+        <Folder Include="Controllers"/>
     </ItemGroup>
 
 </Project>

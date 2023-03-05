@@ -55,14 +55,11 @@ public static class DapperExt
         {
         }
         else
-            @params = new DynamicParameters()
-            {
-            };
-
-        foreach (var (key, value) in pairs)
         {
-            @params.Add(key, value);
+            @params = new DynamicParameters();
         }
+
+        foreach (var (key, value) in pairs) @params.Add(key, value);
 
         return @params;
     }

@@ -15,9 +15,11 @@ public sealed class DoubleHandler : YdbTypeHandler<double>, IYdbSimpleTypeHandle
         dest.DoubleValue = value;
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Double
+            TypeId = Type.Types.PrimitiveTypeId.Double
         };
+    }
 }

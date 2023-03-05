@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
-using Type = System.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeMapping;
 

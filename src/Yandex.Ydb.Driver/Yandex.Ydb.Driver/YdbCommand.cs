@@ -133,7 +133,7 @@ public class YdbCommand : DbCommand
             OperationParams = new OperationParams
             {
                 OperationMode = OperationParams.Types.OperationMode.Sync,
-                ReportCostInfo = FeatureFlag.Types.Status.Disabled,
+                ReportCostInfo = FeatureFlag.Types.Status.Disabled
             }
         };
 
@@ -145,19 +145,14 @@ public class YdbCommand : DbCommand
 
         ExecuteDataQueryResponse? response = null;
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             response = await _ydbConnection.Connector.UnaryCallAsync(TableService.ExecuteDataQueryMethod, request,
                 GetOptions());
             if (!response.Operation.Ready)
-            {
                 throw new YdbDriverException($"Operation `{response.Operation.Id}` is not ready");
-            }
 
-            if (response.Operation.Status == StatusIds.Types.StatusCode.Success)
-            {
-                break;
-            }
+            if (response.Operation.Status == StatusIds.Types.StatusCode.Success) break;
 
             LogMessages.RetryExecutingCommand(Logger, sessionId, i + 1);
             await Task.Delay(i); //RETRY
@@ -170,12 +165,10 @@ public class YdbCommand : DbCommand
 
     private CallOptions GetOptions()
     {
-        return new CallOptions(new Metadata()
+        return new CallOptions(new Metadata
         {
             { YdbMetadata.RpcDatabaseHeader, Connection?.Database ?? string.Empty }
-        })
-        {
-        };
+        });
     }
 
     /// <inheritdoc />

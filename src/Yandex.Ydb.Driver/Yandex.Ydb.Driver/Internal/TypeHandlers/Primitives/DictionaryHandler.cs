@@ -46,7 +46,7 @@ public sealed class DictionaryHandler : ContainerHandlerBase<IDictionary>
             keyHandler.Write(kv.Key, key);
             valueHandler.Write(kv.Value, val);
 
-            dest.Pairs.Add(new ValuePair()
+            dest.Pairs.Add(new ValuePair
             {
                 Key = key,
                 Payload = val
@@ -62,12 +62,12 @@ public sealed class DictionaryHandler : ContainerHandlerBase<IDictionary>
         var key = type.GetGenericArguments()[0];
         var payload = type.GetGenericArguments()[1];
 
-        return new global::Ydb.Type
+        return new Type
         {
-            DictType = new DictType()
+            DictType = new DictType
             {
                 Key = Mapper.ResolveByClrType(key).GetYdbType(value),
-                Payload = Mapper.ResolveByClrType(payload).GetYdbType(value),
+                Payload = Mapper.ResolveByClrType(payload).GetYdbType(value)
             }
         };
     }

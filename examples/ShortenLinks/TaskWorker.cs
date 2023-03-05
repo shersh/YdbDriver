@@ -5,8 +5,8 @@ public class TaskWorker : IHostedService
 {
     private readonly ILogger<TaskWorker> _log;
     private readonly ITaskRepository _taskRepository;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
     private Task _task;
-    private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
 
     public TaskWorker(ILogger<TaskWorker> log, ITaskRepository taskRepository)
@@ -14,7 +14,7 @@ public class TaskWorker : IHostedService
         _log = log;
         _taskRepository = taskRepository;
 
-        Dapper.SqlMapper.SetTypeMap(
+        SqlMapper.SetTypeMap(
             typeof(QueryResult),
             new CustomPropertyTypeMap(
                 typeof(QueryResult),
@@ -28,6 +28,12 @@ public class TaskWorker : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _task = Task.Factory.StartNew(Processing, cancellationToken);
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _cancellationTokenSource.Cancel();
         return Task.CompletedTask;
     }
 
@@ -50,11 +56,5 @@ public class TaskWorker : IHostedService
                 _log.LogError(e, "Failed to process task");
             }
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _cancellationTokenSource.Cancel();
-        return Task.CompletedTask;
     }
 }

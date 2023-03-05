@@ -1,9 +1,6 @@
 using System.Collections.Concurrent;
 using System.Data;
-using Microsoft.Extensions.Logging.Abstractions;
-using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
-using Type = Ydb.Type;
 
 namespace Yandex.Ydb.Driver.Internal.TypeMapping;
 

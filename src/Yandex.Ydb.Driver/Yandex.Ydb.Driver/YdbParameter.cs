@@ -25,12 +25,12 @@ public sealed class YdbParameter<T> : YdbParameter
 
     internal override void ResolveHandler(TypeMapper mapper)
     {
-        _handler = mapper.ResolveByValue<T>(TypedValue);
+        _handler = mapper.ResolveByValue(TypedValue);
     }
 
     public override TypedValue ToProto()
     {
-        var proto = new TypedValue()
+        var proto = new TypedValue
         {
             Value = new Value()
         };
@@ -46,8 +46,8 @@ public sealed class YdbParameter<T> : YdbParameter
 
 public class YdbParameter : DbParameter
 {
-    private object? _value;
     protected YdbTypeHandler? _handler;
+    private object? _value;
 
     public YdbParameter()
     {
@@ -70,11 +70,6 @@ public class YdbParameter : DbParameter
     public override string ParameterName { get; set; }
     public override string SourceColumn { get; set; }
 
-    internal virtual void ResolveHandler(TypeMapper mapper)
-    {
-        _handler = mapper.ResolveByValue(_value);
-    }
-
     public override object? Value
     {
         get => _value;
@@ -89,6 +84,11 @@ public class YdbParameter : DbParameter
 
     public override int Size { get; set; }
 
+    internal virtual void ResolveHandler(TypeMapper mapper)
+    {
+        _handler = mapper.ResolveByValue(_value);
+    }
+
     public override void ResetDbType()
     {
         DbType = DbType.Object;
@@ -96,7 +96,7 @@ public class YdbParameter : DbParameter
 
     public virtual TypedValue ToProto()
     {
-        var proto = new TypedValue()
+        var proto = new TypedValue
         {
             Value = new Value()
         };

@@ -11,17 +11,19 @@ public sealed class Int8Handler : YdbPrimitiveTypeHandler<byte>
         dest.Int32Value = value;
     }
 
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
         {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Int8
+            TypeId = Type.Types.PrimitiveTypeId.Int8
         };
+    }
 
     protected override void WriteAsObject(object value, Value dest)
     {
         dest.Int32Value = Convert.ToByte(value);
     }
-    
+
     public override void Write(bool value, Value dest)
     {
         dest.Int32Value = Convert.ToByte(value);

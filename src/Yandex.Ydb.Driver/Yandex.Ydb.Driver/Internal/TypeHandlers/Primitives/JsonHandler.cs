@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
-using Google.Protobuf;
+﻿using System.Text.Json;
 using Yandex.Ydb.Driver.Helpers;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Yandex.Ydb.Driver.Types.Primitives;
@@ -17,14 +15,15 @@ public interface IYdbJsonTypeHandler
 public sealed class JsonHandler : YdbTypeHandler<string>, IYdbTypeHandler<JsonValue>, IYdbSimpleTypeHandler<string>,
     IYdbJsonTypeHandler
 {
+    public TAny ReadJson<TAny>(Value value, FieldDescription? fieldDescription)
+    {
+        var json = Read(value, fieldDescription);
+        return JsonSerializer.Deserialize<TAny>(json)!;
+    }
+
     public override string Read(Value value, FieldDescription? fieldDescription = null)
     {
         return value.GetString() ?? string.Empty;
-    }
-
-    public void Write(JsonValue value, Value dest)
-    {
-        dest.TextValue = value.Value;
     }
 
     public override void Write(string value, Value dest)
@@ -32,20 +31,21 @@ public sealed class JsonHandler : YdbTypeHandler<string>, IYdbTypeHandler<JsonVa
         dest.TextValue = value;
     }
 
-    public TAny ReadJson<TAny>(Value value, FieldDescription? fieldDescription)
+    public void Write(JsonValue value, Value dest)
     {
-        var json = Read(value, fieldDescription);
-        return JsonSerializer.Deserialize<TAny>(json)!;
+        dest.TextValue = value.Value;
     }
-
-    protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default =>
-        new()
-        {
-            TypeId = global::Ydb.Type.Types.PrimitiveTypeId.Json
-        };
 
     JsonValue IYdbTypeHandler<JsonValue>.Read(Value value, FieldDescription? fieldDescription)
     {
         return JsonValue.FromString(value.GetString());
+    }
+
+    protected override Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
+    {
+        return new()
+        {
+            TypeId = Type.Types.PrimitiveTypeId.Json
+        };
     }
 }

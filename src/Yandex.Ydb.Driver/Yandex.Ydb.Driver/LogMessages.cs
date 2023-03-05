@@ -8,7 +8,6 @@ namespace Yandex.Ydb.Driver;
 
 internal static partial class LogMessages
 {
-    
     [LoggerMessage(Level = LogLevel.Trace, Message = "Opening connection to {host}:{port}/{database}")]
     internal static partial void OpeningConnection(ILogger logger, string host, int port, string database);
 
@@ -19,7 +18,7 @@ internal static partial class LogMessages
         Message = "Retry send command with session `{session_id}`, retried count: {count}")]
     internal static partial void RetryExecutingCommand(ILogger logger, string session_id, int count);
 
-    
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "Opening grpc channel to `{url}`")]
     internal static partial void OpenningGrpcChannel(ILogger logger, string url);
 }

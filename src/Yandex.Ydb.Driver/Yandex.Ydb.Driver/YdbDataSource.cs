@@ -29,7 +29,7 @@ public abstract class YdbDataSource : DbDataSource
     }
 
     public virtual (long, long, long) Statistics => (0, 0, 0);
-    
+
     internal YDbConnectionStringBuilder Settings { get; }
 
     internal YdbDataSourceConfiguration Configuration { get; }
@@ -38,8 +38,8 @@ public abstract class YdbDataSource : DbDataSource
 
     internal TypeMapper TypeMapper { get; private set; }
 
-    internal ICredentialsProvider CredentialsProvider { get; private set; }
-    
+    internal ICredentialsProvider CredentialsProvider { get; }
+
     public override string ConnectionString { get; }
 
     internal abstract ValueTask<YdbConnector> Get(YdbConnection conn, TimeSpan timeout,

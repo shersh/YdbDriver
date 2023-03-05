@@ -2,6 +2,7 @@
 using System.Security.Cryptography.X509Certificates;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Yandex.Ydb.Driver.Helpers;
 
 namespace Yandex.Ydb.Driver;
 
@@ -49,10 +50,10 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
             if (path != null)
             {
                 if (!File.Exists(Path.Combine(path, "cert.pem")))
-                    Helpers.ThrowHelper.FileNotFound($"Cert.pem file does not exist in path `{path}`", "cert.pem");
+                    ThrowHelper.FileNotFound($"Cert.pem file does not exist in path `{path}`", "cert.pem");
 
                 if (!File.Exists(Path.Combine(path, "key.pem")))
-                    Helpers.ThrowHelper.FileNotFound($"Key.pem file does not exist in path `{path}`", "key.pem");
+                    ThrowHelper.FileNotFound($"Key.pem file does not exist in path `{path}`", "key.pem");
 
                 var cert = X509Certificate2.CreateFromPemFile(Path.Combine(path, "cert.pem"),
                     Path.Combine(path, "key.pem"));
@@ -60,14 +61,14 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
                 handler.SslOptions.ClientCertificates.Add(cert);
 
                 if (settings.TrustSsl)
-                    handler.SslOptions.CertificateChainPolicy = new X509ChainPolicy()
+                    handler.SslOptions.CertificateChainPolicy = new X509ChainPolicy
                         { TrustMode = X509ChainTrustMode.CustomRootTrust, CustomTrustStore = { cert } };
             }
         }
 
-        _channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions()
+        _channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions
         {
-            HttpHandler = handler,
+            HttpHandler = handler
         });
         await _channel.ConnectAsync(token);
 
@@ -98,10 +99,7 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
 
     private CallOptions GetDefaultOptions()
     {
-        return new CallOptions()
-        {
-            Headers = { }
-        };
+        return new CallOptions();
     }
 
     public TResponse UnaryCall<TRequest, TResponse>(Method<TRequest, TResponse> method,

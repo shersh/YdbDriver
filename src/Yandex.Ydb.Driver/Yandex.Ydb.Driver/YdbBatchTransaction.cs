@@ -5,8 +5,8 @@ namespace Yandex.Ydb.Driver;
 
 public sealed class YdbBatchTransaction : DbTransaction
 {
-    private readonly YdbConnection _connection;
     private readonly List<YdbCommand> _commands = new();
+    private readonly YdbConnection _connection;
 
     public YdbBatchTransaction(YdbConnection connection)
     {

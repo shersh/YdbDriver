@@ -71,12 +71,10 @@ public sealed class YdbTransaction : DbTransaction
 
     private CallOptions GetOptions()
     {
-        return new CallOptions(new Metadata()
+        return new CallOptions(new Metadata
         {
             { YdbMetadata.RpcDatabaseHeader, Connection?.Database ?? string.Empty }
-        })
-        {
-        };
+        });
     }
 
     public override void Commit()

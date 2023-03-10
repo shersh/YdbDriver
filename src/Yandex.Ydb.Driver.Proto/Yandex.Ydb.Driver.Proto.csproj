@@ -8,49 +8,49 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.21.12"/>
-        <PackageReference Include="Grpc.Net.Client" Version="2.51.0"/>
-        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.51.0"/>
-        <PackageReference Include="Grpc.Tools" Version="2.51.0">
+        <PackageReference Include="Google.Protobuf" Version="3.22.1" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.51.0" />
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.51.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.52.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="protos\ydb_auth.proto"/>
-        <Protobuf Include="protos\ydb_auth_v1.proto"/>
-        <Protobuf Include="protos\ydb_cms.proto"/>
-        <Protobuf Include="protos\ydb_cms_v1.proto"/>
-        <Protobuf Include="protos\ydb_common.proto"/>
-        <Protobuf Include="protos\ydb_coordination.proto"/>
-        <Protobuf Include="protos\ydb_coordination_v1.proto"/>
-        <Protobuf Include="protos\ydb_discovery.proto"/>
-        <Protobuf Include="protos\ydb_discovery_v1.proto"/>
-        <Protobuf Include="protos\ydb_export.proto"/>
-        <Protobuf Include="protos\ydb_export_v1.proto"/>
-        <Protobuf Include="protos\ydb_formats.proto"/>
-        <Protobuf Include="protos\ydb_import.proto"/>
-        <Protobuf Include="protos\ydb_import_v1.proto"/>
-        <Protobuf Include="protos\ydb_issue_message.proto"/>
-        <Protobuf Include="protos\ydb_monitoring.proto"/>
-        <Protobuf Include="protos\ydb_monitoring_v1.proto"/>
-        <Protobuf Include="protos\ydb_operation.proto"/>
-        <Protobuf Include="protos\ydb_operation_v1.proto"/>
-        <Protobuf Include="protos\ydb_query_stats.proto"/>
-        <Protobuf Include="protos\ydb_rate_limiter.proto"/>
-        <Protobuf Include="protos\ydb_rate_limiter_v1.proto"/>
-        <Protobuf Include="protos\ydb_scheme.proto"/>
-        <Protobuf Include="protos\ydb_scheme_v1.proto"/>
-        <Protobuf Include="protos\ydb_scripting.proto"/>
-        <Protobuf Include="protos\ydb_scripting_v1.proto"/>
-        <Protobuf Include="protos\ydb_status_codes.proto"/>
-        <Protobuf Include="protos\ydb_table.proto" GrpcServices="Client"/>
-        <Protobuf Include="protos\ydb_table_v1.proto"/>
-        <Protobuf Include="protos\ydb_topic.proto"/>
-        <Protobuf Include="protos\ydb_topic_v1.proto"/>
-        <Protobuf Include="protos\ydb_value.proto"/>
-        <Protobuf Include="protos\annotations\validation.proto"/>
+        <Protobuf Include="protos\ydb_auth.proto" />
+        <Protobuf Include="protos\ydb_auth_v1.proto" />
+        <Protobuf Include="protos\ydb_cms.proto" />
+        <Protobuf Include="protos\ydb_cms_v1.proto" />
+        <Protobuf Include="protos\ydb_common.proto" />
+        <Protobuf Include="protos\ydb_coordination.proto" />
+        <Protobuf Include="protos\ydb_coordination_v1.proto" />
+        <Protobuf Include="protos\ydb_discovery.proto" />
+        <Protobuf Include="protos\ydb_discovery_v1.proto" />
+        <Protobuf Include="protos\ydb_export.proto" />
+        <Protobuf Include="protos\ydb_export_v1.proto" />
+        <Protobuf Include="protos\ydb_formats.proto" />
+        <Protobuf Include="protos\ydb_import.proto" />
+        <Protobuf Include="protos\ydb_import_v1.proto" />
+        <Protobuf Include="protos\ydb_issue_message.proto" />
+        <Protobuf Include="protos\ydb_monitoring.proto" />
+        <Protobuf Include="protos\ydb_monitoring_v1.proto" />
+        <Protobuf Include="protos\ydb_operation.proto" />
+        <Protobuf Include="protos\ydb_operation_v1.proto" />
+        <Protobuf Include="protos\ydb_query_stats.proto" />
+        <Protobuf Include="protos\ydb_rate_limiter.proto" />
+        <Protobuf Include="protos\ydb_rate_limiter_v1.proto" />
+        <Protobuf Include="protos\ydb_scheme.proto" />
+        <Protobuf Include="protos\ydb_scheme_v1.proto" />
+        <Protobuf Include="protos\ydb_scripting.proto" />
+        <Protobuf Include="protos\ydb_scripting_v1.proto" />
+        <Protobuf Include="protos\ydb_status_codes.proto" />
+        <Protobuf Include="protos\ydb_table.proto" GrpcServices="Client" />
+        <Protobuf Include="protos\ydb_table_v1.proto" />
+        <Protobuf Include="protos\ydb_topic.proto" />
+        <Protobuf Include="protos\ydb_topic_v1.proto" />
+        <Protobuf Include="protos\ydb_value.proto" />
+        <Protobuf Include="protos\annotations\validation.proto" />
     </ItemGroup>
 
 </Project>

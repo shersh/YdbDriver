@@ -1,4 +1,5 @@
 ﻿using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Ydb.Table;
 using Ydb.Table.V1;
@@ -7,6 +8,7 @@ namespace Yandex.Ydb.Driver;
 
 public sealed class SessionPool : ISessionPool
 {
+    private readonly ILogger _log;
     private readonly YdbConnector _connector;
 
     private readonly Queue<string> _idle = new();
@@ -18,8 +20,9 @@ public sealed class SessionPool : ISessionPool
 
     private readonly SemaphoreSlim semaphoreSlim;
 
-    internal SessionPool(YdbConnector connector, int maxSessions)
+    internal SessionPool(ILogger log, YdbConnector connector, int maxSessions)
     {
+        _log = log;
         _connector = connector;
         _maxSessions = maxSessions;
         semaphoreSlim = new SemaphoreSlim(maxSessions);
@@ -30,18 +33,26 @@ public sealed class SessionPool : ISessionPool
     {
         for (var i = 0; i < _maxSessions; i++)
         {
-            var response = await _connector.UnaryCallAsync(TableService.CreateSessionMethod, createRequest,
-                new CallOptions(new Metadata
-                {
-                    { YdbMetadata.RpcDatabaseHeader, database }
-                }));
-
-            lock (_lck)
+            try
             {
-                var result = response.Operation.GetResult<CreateSessionResult>();
-                var session = new Session(result.SessionId, database);
-                _sessions.Add(result.SessionId, session);
-                _idle.Enqueue(session.Id);
+                var response = await _connector.UnaryCallAsync(TableService.CreateSessionMethod, createRequest,
+                    new CallOptions(new Metadata
+                    {
+                        { YdbMetadata.RpcDatabaseHeader, database }
+                    }));
+                
+                lock (_lck)
+                {
+                    var result = response.Operation.GetResult<CreateSessionResult>();
+                    var session = new Session(result.SessionId, database);
+                    _sessions.Add(result.SessionId, session);
+                    _idle.Enqueue(session.Id);
+                }
+            }
+            catch (Exception e)
+            {
+                _log.LogError(e, "Failed to create session during initializing");
+                throw;
             }
         }
     }

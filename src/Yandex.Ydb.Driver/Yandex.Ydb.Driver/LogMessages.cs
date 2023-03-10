@@ -21,4 +21,11 @@ internal static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Opening grpc channel to `{url}`")]
     internal static partial void OpenningGrpcChannel(ILogger logger, string url);
+    
+    
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Try create connection")]
+    internal static partial void CreateDbConnection(ILogger logger);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to create connection")]
+    internal static partial void ExceptionToCreateDbConnection(ILogger logger, Exception ex);
 }

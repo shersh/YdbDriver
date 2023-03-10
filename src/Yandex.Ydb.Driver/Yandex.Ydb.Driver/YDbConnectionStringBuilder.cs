@@ -30,9 +30,9 @@ public class YDbConnectionStringBuilder : DbConnectionStringBuilder
     public const int DefaultCommandTimeout = 15;
 
     /// <summary>
-    ///     The default name of the client ('Yandex.YdbDriverClient').
+    ///     The default name of the client ('Yandex.YdbDriver.ADO').
     /// </summary>
-    public const string DefaultClientName = "Yandex.YdbDriverClient";
+    public const string DefaultClientName = "Yandex.YdbDriver.ADO";
 
     public YDbConnectionStringBuilder(string? connectionString)
     {

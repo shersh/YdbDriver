@@ -34,7 +34,7 @@ internal sealed class PooledDataSource : YdbDataSource
 
         _isBootstrapped = true;
         _connector = await OpenNewConnector(TimeSpan.FromSeconds(60), CancellationToken.None);
-        _sessionPool = new SessionPool(_connector, Settings.MaxSessions);
+        _sessionPool = new SessionPool(Configuration.LoggingConfiguration.SessionLogger, _connector, Settings.MaxSessions);
         await _sessionPool.Initialize(Settings.Database);
 
         await base.Bootstrap();

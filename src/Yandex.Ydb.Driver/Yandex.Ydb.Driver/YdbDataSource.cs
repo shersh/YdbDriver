@@ -48,6 +48,7 @@ public abstract class YdbDataSource : DbDataSource
     /// <inheritdoc />
     public new YdbConnection OpenConnection()
     {
+        LogMessages.CreateDbConnection(LoggingConfiguration.ConnectionLogger);
         var connection = CreateConnection();
 
         try
@@ -55,8 +56,9 @@ public abstract class YdbDataSource : DbDataSource
             connection.Open();
             return connection;
         }
-        catch
+        catch (Exception e)
         {
+            LogMessages.ExceptionToCreateDbConnection(LoggingConfiguration.ConnectionLogger, e);
             connection.Dispose();
             throw;
         }
@@ -65,6 +67,7 @@ public abstract class YdbDataSource : DbDataSource
     /// <inheritdoc />
     public new async ValueTask<YdbConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
     {
+        LogMessages.CreateDbConnection(LoggingConfiguration.ConnectionLogger);
         var connection = CreateConnection();
 
         try
@@ -72,8 +75,9 @@ public abstract class YdbDataSource : DbDataSource
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
             return connection;
         }
-        catch
+        catch (Exception e)
         {
+            LogMessages.ExceptionToCreateDbConnection(LoggingConfiguration.ConnectionLogger, e);
             await connection.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -83,7 +87,7 @@ public abstract class YdbDataSource : DbDataSource
     protected override async ValueTask<DbConnection> OpenDbConnectionAsync(
         CancellationToken cancellationToken = default)
     {
-        return await OpenConnectionAsync(cancellationToken);
+        return await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -98,8 +102,7 @@ public abstract class YdbDataSource : DbDataSource
     /// <param name="commandText">An optional SQL for the command.</param>
     public new YdbCommand CreateCommand(string? commandText = null)
     {
-        var ydbConnection = CreateConnection();
-        ydbConnection.Open();
+        var ydbConnection = OpenConnection();
         return new YdbDataSourceCommand(ydbConnection) { CommandText = commandText! };
     }
 
@@ -184,7 +187,7 @@ public abstract class YdbDataSource : DbDataSource
 
     protected virtual async ValueTask DisposeAsyncBase()
     {
-        await ClearAsync();
+        await ClearAsync().ConfigureAwait(false);
     }
 
     protected abstract ValueTask ClearAsync();

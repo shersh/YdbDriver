@@ -16,9 +16,11 @@ public class YdbLoggingConfiguration
         CommandLogger = loggerFactory.CreateLogger("Ydb.Command");
         TransactionLogger = loggerFactory.CreateLogger("Ydb.Transaction");
         ExceptionLogger = loggerFactory.CreateLogger("Ydb.Exception");
+        SessionLogger = loggerFactory.CreateLogger("Ydb.Session");
     }
 
     internal ILogger ConnectionLogger { get; }
+    internal ILogger SessionLogger { get; }
     internal ILogger CommandLogger { get; }
     internal ILogger TransactionLogger { get; }
     internal ILogger ExceptionLogger { get; }

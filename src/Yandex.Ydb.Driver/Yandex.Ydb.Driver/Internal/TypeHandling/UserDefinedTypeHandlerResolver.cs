@@ -21,12 +21,6 @@ internal sealed class UserDefinedTypeHandlerResolver : TypeHandlerResolver
         _handlersByClrType[typeMapping.ClrType] = typeMapping.CreateHandler();
     }
 
-    public override YdbTypeHandler? ResolveByDataTypeName(string typeName)
-    {
-        //NOT SUPPORTED
-        return null;
-    }
-
     public override YdbTypeHandler? ResolveByClrType(Type type)
     {
         _handlersByClrType.TryGetValue(type, out var handler);

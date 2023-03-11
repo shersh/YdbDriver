@@ -1,4 +1,5 @@
-﻿using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
+﻿using System.Diagnostics;
+using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Ydb;
 using Type = System.Type;
@@ -24,6 +25,7 @@ public abstract class YdbTypeHandler
 
     public void Write<TAny>(TAny? value, Value dest)
     {
+        Debug.Assert(value != null, nameof(value) + " != null");
         switch (this)
         {
             case IYdbSimpleTypeHandler<TAny> handler:
@@ -80,7 +82,7 @@ public abstract class YdbTypeHandler<TDefault> : YdbTypeHandler, IYdbTypeHandler
         return GetYdbTypeInternal(value);
     }
 
-    protected abstract global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value);
+    protected abstract global::Ydb.Type GetYdbTypeInternal<TAny>(TAny? value);
 
     public override Type GetFieldType(FieldDescription? fieldDescription = null)
     {

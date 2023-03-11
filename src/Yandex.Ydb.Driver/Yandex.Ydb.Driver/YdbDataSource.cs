@@ -12,7 +12,6 @@ public abstract class YdbDataSource : DbDataSource
 {
     private readonly ILogger _connectionLogger;
 
-
     private bool _isBootstrapped;
     private int _isDisposed;
 

@@ -18,12 +18,8 @@ public static class OperationExtensions
 
     public static T GetResult<T>(this Operation op) where T : IMessage, new()
     {
-        if (op.IsFailed())
-            throw new YdbDriverException(
-                $"Operation `{op.Id}` failed. Status code: `{op.Status}`. Issues: `{string.Join("\n", op.Issues?.Select(x => x.ToString()) ?? Array.Empty<string>())}`");
-
         return !op.Result.TryUnpack(out T result)
-            ? throw new YdbDriverException($"Failed to unpack result to type `{typeof(T)}`")
+            ? throw new YdbUnpackException(op, typeof(T))
             : result;
     }
 }

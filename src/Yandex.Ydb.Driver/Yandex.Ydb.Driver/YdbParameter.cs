@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Ydb;
@@ -67,7 +68,11 @@ public class YdbParameter : DbParameter
     public override ParameterDirection Direction { get; set; }
 
     public override bool IsNullable { get; set; }
+    
+    [AllowNull]
     public override string ParameterName { get; set; }
+    
+    [AllowNull]
     public override string SourceColumn { get; set; }
 
     public override object? Value

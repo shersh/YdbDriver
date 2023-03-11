@@ -50,7 +50,7 @@ internal sealed class UnpooledYdbDataSource : YdbDataSource
         ClearAsync().GetAwaiter().GetResult();
     }
 
-    internal override bool TryGetIdleConnector(out YdbConnector? connector)
+    internal override bool TryGetIdleConnector(out YdbConnector connector)
     {
         connector = _connector;
         return true;

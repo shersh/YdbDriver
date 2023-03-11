@@ -45,9 +45,10 @@ internal sealed class PooledDataSource : YdbDataSource
         return await _sessionPool.GetSession(database);
     }
 
-    internal override async ValueTask ReturnAsync(string session)
+    internal override ValueTask ReturnAsync(string session)
     {
         _sessionPool.Return(session);
+        return ValueTask.CompletedTask;
     }
 
     internal override void Return(string session)
@@ -79,7 +80,7 @@ internal sealed class PooledDataSource : YdbDataSource
         ClearAsync().GetAwaiter().GetResult();
     }
 
-    internal override bool TryGetIdleConnector(out YdbConnector? connector)
+    internal override bool TryGetIdleConnector(out YdbConnector connector)
     {
         connector = _connector;
         return true;

@@ -116,14 +116,6 @@ internal sealed class BuiltInTypeHandlerResolver : TypeHandlerResolver
         };
     }
 
-    public override YdbTypeHandler? ResolveByDataTypeName(string typeName)
-    {
-        return typeName switch
-        {
-            "Int32" => Int32Handler
-        };
-    }
-
     public override YdbTypeHandler? ResolveByYdbType(Type type)
     {
         return ResolveByYdbTypeInternal(type, 0);

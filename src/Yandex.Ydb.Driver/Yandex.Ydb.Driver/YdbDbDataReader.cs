@@ -40,8 +40,9 @@ public sealed class YdbDbDataReader : DbDataReader
 
     public override object this[string name] => GetValue(GetOrdinal(name));
 
-    public override int RecordsAffected => CurrentTable.Rows.Count;
-    public override bool HasRows => CurrentTable.Rows.Count > 0;
+    public override int RecordsAffected => CurrentTable != null ? CurrentTable.Rows.Count : 0;
+
+    public override bool HasRows => CurrentTable != null && CurrentTable.Rows.Count > 0;
 
     public override bool IsClosed => true;
 
@@ -97,6 +98,8 @@ public sealed class YdbDbDataReader : DbDataReader
 
     public override T GetFieldValue<T>(int ordinal)
     {
+        Debug.Assert(CurrentRow != null, nameof(CurrentRow) + " != null");
+
         var field = GetField(ordinal);
         return field.Handler.Read<T>(CurrentRow.Items[ordinal], field);
     }
@@ -176,6 +179,8 @@ public sealed class YdbDbDataReader : DbDataReader
 
     public override bool IsDBNull(int ordinal)
     {
+        Debug.Assert(RowFields != null, nameof(RowFields) + " != null");
+        
         return RowFields[ordinal].NullFlagValue == NullValue.NullValue;
     }
 
@@ -192,13 +197,14 @@ public sealed class YdbDbDataReader : DbDataReader
         if (_resultIndex >= _results.Count)
             return false;
 
-        if (_results[_resultIndex].Columns.Count == 0)
+        var set = _results[_resultIndex]!;
+        if (set.Columns.Count == 0)
             return false;
 
-        _fields = ArrayPool<FieldDescription>.Shared.Rent(_results[_resultIndex].Columns.Count);
-        for (var index = 0; index < _results[_resultIndex].Columns.Count; index++)
+        _fields = ArrayPool<FieldDescription>.Shared.Rent(set.Columns.Count);
+        for (var index = 0; index < set.Columns.Count; index++)
         {
-            var column = _results[_resultIndex].Columns[index];
+            var column = set.Columns[index];
             var field = new FieldDescription(column.Type, column.Name, index, _typeMapper);
             field.ResolveHandler();
 
@@ -221,6 +227,7 @@ public sealed class YdbDbDataReader : DbDataReader
         if (_resultIndex == -1 && !NextResult())
             return false;
 
+        Debug.Assert(CurrentTable != null, nameof(CurrentTable) + " != null");
         return ++_rowIndex < CurrentTable.Rows.Count;
     }
 

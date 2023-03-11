@@ -23,7 +23,7 @@ public sealed class YdbTransaction : DbTransaction
     protected override DbConnection? DbConnection => _connection;
 
     public override IsolationLevel IsolationLevel => _isolationLevel;
-    public string TransactionId { get; private set; }
+    public string? TransactionId { get; private set; }
 
     public string Init(IsolationLevel isolationLevel)
     {

@@ -54,6 +54,8 @@ public sealed class TupleHandler : ContainerHandlerBase<ITuple>
 
     protected override global::Ydb.Type GetYdbTypeInternal<TDefault>(TDefault? value) where TDefault : default
     {
+        Debug.Assert(Mapper != null, nameof(Mapper) + " != null");
+        
         var tupleType = new TupleType();
         var arguments = typeof(TDefault).GetGenericArguments();
         var elements = arguments.Select(x => Mapper.ResolveByClrType(x).GetYdbType(value));

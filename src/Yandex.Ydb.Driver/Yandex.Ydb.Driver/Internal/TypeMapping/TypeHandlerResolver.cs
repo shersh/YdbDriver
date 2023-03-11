@@ -4,8 +4,6 @@ namespace Yandex.Ydb.Driver.Internal.TypeMapping;
 
 public abstract class TypeHandlerResolver
 {
-    public abstract YdbTypeHandler? ResolveByDataTypeName(string typeName);
-
     public abstract YdbTypeHandler? ResolveByClrType(Type type);
 
     public virtual YdbTypeHandler? ResolveValueDependentValue(object value)

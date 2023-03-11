@@ -8,3 +8,8 @@ internal static class YdbMetadata
     public const string RpcTraceIdHeader = "x-ydb-trace-id";
     public const string RpcSdkInfoHeader = "x-ydb-sdk-build-info";
 }
+
+internal static class YdbDriverConstants
+{
+    public const string ExecuteDataQueryMethodOperationKey = "ExecuteDataQueryMethod";
+}

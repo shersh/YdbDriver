@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Yandex.Ydb.Driver.Internal.TypeHandlers;
 using Yandex.Ydb.Driver.Internal.TypeHandlers.Primitives;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
@@ -12,7 +13,7 @@ public sealed class TypeMapper
     private readonly Dictionary<uint, YdbTypeHandler> _userTypeMappings = new();
 
     private readonly object _writeLock = new();
-    private ILogger _logger;
+    private ILogger _logger = NullLogger.Instance;
 
     private volatile TypeHandlerResolver[] _resolvers;
 

@@ -52,7 +52,7 @@ public abstract class YdbPrimitiveTypeHandler<TAny> : YdbTypeHandler, IYdbSimple
 
     public object Read(Value value, FieldDescription? fieldDescription)
     {
-        return ReadAsObject(value, fieldDescription);
+        return ReadAsObject(value, fieldDescription)!;
     }
 
     public abstract void Write(sbyte value, Value dest);

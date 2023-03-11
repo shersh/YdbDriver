@@ -11,7 +11,7 @@ public class TextTypeHandler : YdbPrimitiveTypeHandler<string>, IYdbTypeHandler<
 {
     public Guid Read(Value value, FieldDescription? fieldDescription)
     {
-        return Guid.Parse(value.GetString());
+        return Guid.Parse(value.GetString()!);
     }
 
     public void Write(Guid value, Value dest)

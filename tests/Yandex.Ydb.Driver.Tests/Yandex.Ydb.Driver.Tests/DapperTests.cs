@@ -2,12 +2,12 @@
 
 namespace Yandex.Ydb.Driver.Tests;
 
-public class DapperTests
+public class DapperTests : BaseTests
 {
     [Fact]
     public async Task QueryDynamic_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var queryAsync = await connection.QueryAsync(@"SELECT 1;");
 
         Assert.NotEmpty(queryAsync);
@@ -16,7 +16,7 @@ public class DapperTests
     [Fact]
     public async Task QueryCast_Success()
     {
-        await using var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var queryAsync = await connection.QueryAsync<TestClass>(@"SELECT 123 as id;");
 
         Assert.NotNull(queryAsync);
@@ -28,7 +28,7 @@ public class DapperTests
     [Fact]
     public async Task QueryDynamicParameter_Success()
     {
-        await using var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var queryAsync =
             await connection.QueryAsync<TestClass>(@"DECLARE $id AS Int32; SELECT $id as id;",
                 new { }.WithParams(("$id", 123)));
@@ -44,6 +44,10 @@ public class DapperTests
         public int Id { get; set; }
 
         public Guid Uuid { get; set; }
+    }
+
+    public DapperTests(LocalDatabaseFixture fixture) : base(fixture)
+    {
     }
 }
 

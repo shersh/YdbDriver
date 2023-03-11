@@ -1,18 +1,22 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
+using Yandex.Ydb.Driver.Credentials;
+using Yandex.Ydb.Driver.Internal.TypeMapping;
 using Yandex.Ydb.Driver.Types.Primitives;
 using Ydb.Table;
 
 namespace Yandex.Ydb.Driver.Tests;
 
-public class YdbCommandTests
+public class YdbCommandTests : BaseTests
 {
     [Fact]
     public async Task ExecuteReader_WithJsonParameter_ReturnsJson()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
-        var command = connection.CreateYdbCommand();
+        await using var connection = await Source.OpenConnectionAsync();
+        await using var command = connection.CreateYdbCommand();
         command.TxControl = null;
         command.CommandText = "DECLARE $obj as Json; SELECT $obj;";
 
@@ -35,9 +39,9 @@ public class YdbCommandTests
 
 
     [Fact]
-    public void ExecuteNonQuery_WithDefaultTxControl_Success()
+    public async Task ExecuteNonQuery_WithDefaultTxControl_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var command = connection.CreateYdbCommand();
         command.TxControl = null;
         command.CommandText = "SELECT 1;";
@@ -47,9 +51,9 @@ public class YdbCommandTests
     }
 
     [Fact]
-    public void ExecuteNonQuery_WithoutTransaction_Success()
+    public async Task ExecuteNonQuery_WithoutTransaction_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var command = connection.CreateYdbCommand();
         command.TxControl = new TransactionControl
         {
@@ -62,10 +66,10 @@ public class YdbCommandTests
     }
 
     [Fact]
-    public void ExecuteNonQuery_InsideTransaction_Success()
+    public async Task ExecuteNonQuery_InsideTransaction_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
-        using var transaction = connection.BeginTransaction(IsolationLevel.Serializable);
+        await using var connection = await Source.OpenConnectionAsync();
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable);
         var command = connection.CreateYdbCommand();
         command.CommandText = "SELECT 1;";
         command.Transaction = transaction;
@@ -76,10 +80,10 @@ public class YdbCommandTests
     }
 
     [Fact]
-    public void ExecuteCommandWithGenericParameters_Success()
+    public async Task ExecuteCommandWithGenericParameters_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
-        var command = connection.CreateYdbCommand();
+        await using var connection = await Source.OpenConnectionAsync();
+        await using var command = connection.CreateYdbCommand();
 
         command.CommandText = @"
             DECLARE $id AS Int32;
@@ -107,9 +111,9 @@ public class YdbCommandTests
     }
 
     [Fact]
-    public void ExecuteCommandWithParameters_Success()
+    public async Task ExecuteCommandWithParameters_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var command = connection.CreateYdbCommand();
 
         command.CommandText = @"
@@ -138,9 +142,9 @@ public class YdbCommandTests
     }
 
     [Fact]
-    public void ExecuteDbDataReader_Success()
+    public async Task ExecuteDbDataReader_Success()
     {
-        var connection = TestHelper.GetDefaultConnectionAndOpen();
+        await using var connection = await Source.OpenConnectionAsync();
         var command = connection.CreateYdbCommand();
 
         var examples = new List<(object, Func<DbDataReader, int, object>)>
@@ -226,4 +230,8 @@ public class YdbCommandTests
     }
 
     public record TestClass(int a, string? b);
+
+    public YdbCommandTests(LocalDatabaseFixture fixture) : base(fixture)
+    {
+    }
 }

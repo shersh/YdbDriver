@@ -3,9 +3,58 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 using Yandex.Ydb.Driver.Internal.TypeMapping;
+using Ydb;
+using Ydb.Operations;
+using Ydb.Table;
 
 namespace Yandex.Ydb.Driver;
+
+public interface IRetryPolicyManager
+{
+    AsyncPolicy<Operation> GetDefaultOperationPolicy();
+}
+
+internal sealed class RetryPolicyManager : IRetryPolicyManager
+{
+    public ILogger Logger { get; }
+
+    private static readonly HashSet<StatusIds.Types.StatusCode> RetryableCodes =
+        new HashSet<StatusIds.Types.StatusCode>()
+        {
+            StatusIds.Types.StatusCode.SessionBusy,
+            StatusIds.Types.StatusCode.Overloaded,
+            StatusIds.Types.StatusCode.InternalError,
+            StatusIds.Types.StatusCode.Timeout
+        };
+
+    private readonly Lazy<AsyncRetryPolicy<Operation>> _defaultPolicy;
+
+    public RetryPolicyManager(ILogger logger)
+    {
+        Logger = logger;
+        _defaultPolicy = new Lazy<AsyncRetryPolicy<Operation>>(() =>
+        {
+            return Policy
+                .HandleResult<Operation>(operation =>
+                    RetryableCodes.Contains(operation.Status))
+                .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt)),
+                    (result, span, retryAttempt, _) =>
+                    {
+                        LogMessages.WaitAndRetryOperation(Logger, result.Result.Id, retryAttempt, span,
+                            result.Result.Status);
+                        return Task.CompletedTask;
+                    });
+        });
+    }
+
+    public AsyncPolicy<Operation> GetDefaultOperationPolicy()
+    {
+        return _defaultPolicy.Value;
+    }
+}
 
 public sealed class YdbConnection : DbConnection
 {
@@ -34,6 +83,8 @@ public sealed class YdbConnection : DbConnection
     }
 
     internal YdbConnector? Connector { get; private set; }
+
+    internal IRetryPolicyManager RetryPolicyManager => _dataSource.Configuration.RetryPolicyManager;
 
     [AllowNull]
     public override string ConnectionString
@@ -120,11 +171,9 @@ public sealed class YdbConnection : DbConnection
         LogMessages.OpeningConnection(_logger, _connectionState.Settings.Host, _connectionState.Settings.Port,
             _databaseName);
 
-        YdbConnector? connector = null;
-
         try
         {
-            connector = await _dataSource.Get(this, TimeSpan.FromSeconds(ConnectionTimeout), ctx);
+            var connector = await _dataSource.Get(this, TimeSpan.FromSeconds(ConnectionTimeout), ctx);
             Connector = connector;
             _sessionId = await _dataSource.GetSession(Database);
             _state = ConnectionState.Open;
@@ -146,9 +195,9 @@ public sealed class YdbConnection : DbConnection
         return CreateYdbCommand();
     }
 
-    public YdbCommand CreateYdbCommand()
+    public YdbCommand CreateYdbCommand(string? yql = default)
     {
-        return new YdbCommand(this);
+        return new YdbCommand(this) { CommandText = yql };
     }
 
     internal static YdbConnection FromDataSource(YdbDataSource dataSource)

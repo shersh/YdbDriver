@@ -85,9 +85,13 @@ public class YdbDataSourceBuilder : IYdbDataSourceBuilder
     private YdbDataSourceConfiguration PrepareConfiguration()
     {
         ConnectionStringBuilder.PostProcessAndValidate();
-        return new YdbDataSourceConfiguration(_loggerFactory is null
-                ? YdbLoggingConfiguration.NullConfiguration
-                : new YdbLoggingConfiguration(_loggerFactory), _resolverFactories, _userTypeMappings,
-            _provider ?? new DefaultCredentialsProvider());
+        var loggingConfiguration = _loggerFactory is null
+            ? YdbLoggingConfiguration.NullConfiguration
+            : new YdbLoggingConfiguration(_loggerFactory);
+        var retryPolicyManager = new RetryPolicyManager(loggingConfiguration.CommandLogger);
+        
+        return new YdbDataSourceConfiguration(loggingConfiguration, _resolverFactories, _userTypeMappings,
+            _provider ?? new DefaultCredentialsProvider(),
+            retryPolicyManager);
     }
 }

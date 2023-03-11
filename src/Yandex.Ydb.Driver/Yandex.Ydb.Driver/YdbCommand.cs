@@ -1,14 +1,19 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 using Yandex.Ydb.Driver.Internal.TypeHandling;
 using Ydb;
 using Ydb.Operations;
 using Ydb.Table;
 using Ydb.Table.V1;
+using Guid = System.Guid;
 
 namespace Yandex.Ydb.Driver;
 
@@ -34,6 +39,7 @@ public class YdbCommand : DbCommand
 
     /// <summary>Gets or sets the text command to run against the data source.</summary>
     /// <returns>The text command to execute. The default value is an empty string ("").</returns>
+    [AllowNull]
     public override string CommandText { get; set; }
 
     /// <summary>
@@ -42,6 +48,11 @@ public class YdbCommand : DbCommand
     /// </summary>
     /// <returns>The time in seconds to wait for the command to execute.</returns>
     public override int CommandTimeout { get; set; }
+
+
+    public bool IsIdempotent { get; set; }
+
+    private bool CanRetry => !IsIdempotent;
 
     /// <inheritdoc />
     public override CommandType CommandType
@@ -143,31 +154,40 @@ public class YdbCommand : DbCommand
             request.Parameters.Add(parameter.ParameterName, parameter.ToProto());
         }
 
-        ExecuteDataQueryResponse? response = null;
+        var contextData = new Context(YdbDriverConstants.ExecuteDataQueryMethodOperationKey);
+        var operation =
+            CanRetry
+                ? await _ydbConnection
+                    .RetryPolicyManager
+                    .GetDefaultOperationPolicy()
+                    .ExecuteAsync(ExecuteDataQuery, contextData)
+                    .ConfigureAwait(false)
+                : await ExecuteDataQuery(contextData);
 
-        for (var i = 0; i < 10; i++)
+        if (operation.Status != StatusIds.Types.StatusCode.Success)
         {
-            response = await _ydbConnection.Connector.UnaryCallAsync(TableService.ExecuteDataQueryMethod, request,
-                GetOptions());
-            if (!response.Operation.Ready)
-                throw new YdbDriverException($"Operation `{response.Operation.Id}` is not ready");
-
-            if (response.Operation.Status == StatusIds.Types.StatusCode.Success) break;
-
-            LogMessages.RetryExecutingCommand(Logger, sessionId, i + 1);
-            await Task.Delay(i); //RETRY
-            //TODO: add applying Backoff policy
+            LogMessages.ExecuteDataQueryFailed(Logger, operation.Id, operation.Status);
+            throw new YdbOperationFailedException(operation);
         }
 
-        var result = response.Operation.GetResult<ExecuteQueryResult>();
+        var result = operation.GetResult<ExecuteQueryResult>();
         return result;
+
+        async Task<Operation> ExecuteDataQuery(Context context)
+        {
+            LogMessages.ExecuteDataQueryCalled(Logger, context.CorrelationId, CommandText);
+            var queryResponse = await _ydbConnection.Connector.UnaryCallAsync(TableService.ExecuteDataQueryMethod,
+                request, GetOptions(context.CorrelationId));
+            return queryResponse.Operation;
+        }
     }
 
-    private CallOptions GetOptions()
+    private CallOptions GetOptions(Guid operationId)
     {
         return new CallOptions(new Metadata
         {
-            { YdbMetadata.RpcDatabaseHeader, Connection?.Database ?? string.Empty }
+            { YdbMetadata.RpcDatabaseHeader, Connection?.Database ?? string.Empty },
+            { YdbMetadata.RpcTraceIdHeader, operationId.ToString() }
         });
     }
 
@@ -200,7 +220,7 @@ public class YdbCommand : DbCommand
             new PrepareDataQueryRequest
             {
                 SessionId = _ydbConnection.GetSessionId(), YqlText = CommandText, OperationParams = GetOperationParams()
-            }, GetOptions());
+            }, GetOptions(Guid.NewGuid()));
 
         var result = response.Operation.GetResult<PrepareQueryResult>();
         _queryId = result.QueryId;

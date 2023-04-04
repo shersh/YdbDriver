@@ -4,13 +4,13 @@ namespace Yandex.Ydb.Driver;
 
 public sealed class YdbConnectionSettings
 {
-    public YdbConnectionSettings(YDbConnectionStringBuilder builder) : this(builder.Host, builder.Port,
-        builder.User, builder.Password, builder.Database, builder.UseSsl)
+    public YdbConnectionSettings(YDbConnectionStringBuilder builder, string? rootCertificate, bool trustSsl) : this(builder.Host, builder.Port,
+        builder.User, builder.Password, builder.Database, builder.UseSsl, rootCertificate, trustSsl)
     {
     }
 
     public YdbConnectionSettings(string? host, ushort port, string? user, string? password, string database,
-        bool useSsl)
+        bool useSsl, string? rootCertificate, bool trustSsl)
     {
         if (string.IsNullOrEmpty(host))
             ThrowHelper.ThrowNullException(nameof(host));
@@ -21,6 +21,8 @@ public sealed class YdbConnectionSettings
         Password = password;
         Database = database;
         UseSsl = useSsl;
+        RootCertificate = rootCertificate;
+        TrustSsl = trustSsl;
     }
 
     public string Host { get; init; }
@@ -29,6 +31,8 @@ public sealed class YdbConnectionSettings
     public string? Password { get; init; }
     public string Database { get; init; }
     public bool UseSsl { get; init; }
+    public string? RootCertificate { get; init; }
+    public bool TrustSsl { get; init; }
 
     public void Deconstruct(out string host, out ushort port, out string? user, out string? password,
         out string database)

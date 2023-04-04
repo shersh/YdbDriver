@@ -15,10 +15,6 @@ internal static partial class LogMessages
     [LoggerMessage(Level = LogLevel.Trace, Message = "Execute command called with session `{session_id}`")]
     internal static partial void StartExecutingCommand(ILogger logger, string session_id);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Opening grpc channel to `{url}`")]
-    internal static partial void OpenningGrpcChannel(ILogger logger, string url);
-
-
     [LoggerMessage(Level = LogLevel.Debug, Message = "Try create connection")]
     internal static partial void CreateDbConnection(ILogger logger);
 

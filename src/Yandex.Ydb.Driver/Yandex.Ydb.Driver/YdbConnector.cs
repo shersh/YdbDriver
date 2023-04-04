@@ -2,6 +2,8 @@
 using System.Security.Cryptography.X509Certificates;
 using Grpc.Core;
 using Grpc.Net.Client;
+using Microsoft.Extensions.Logging;
+using Yandex.Cloud.Credentials;
 using Yandex.Ydb.Driver.Helpers;
 
 namespace Yandex.Ydb.Driver;
@@ -10,18 +12,25 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
 {
     private GrpcChannel? _channel;
     private CallInvoker _invoker;
+    private readonly ILogger _logger;
+    private readonly YdbConnectionSettings _settings;
+    private readonly ICredentialsProvider _credentialsProvider;
+    internal string Endpoint { get; }
 
-    internal YdbConnector(YdbDataSource dataSource)
+    internal YdbConnector(ILogger logger, string endpoint, YdbConnectionSettings settings,
+        ICredentialsProvider credentialsProvider)
     {
-        DataSource = dataSource;
+        _logger = logger;
+        _settings = settings;
+        _credentialsProvider = credentialsProvider;
+        Endpoint = endpoint;
     }
-
-    internal YdbDataSource DataSource { get; }
 
     public async ValueTask DisposeAsync()
     {
         if (_channel is not null)
         {
+            LogGrpcShutdown(Endpoint);
             await _channel.ShutdownAsync();
             _channel.Dispose();
         }
@@ -30,7 +39,6 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
     internal async Task Open(TimeSpan timeout, CancellationToken token)
     {
         Debug.Assert(_channel == null);
-        var settings = DataSource.Settings;
 
         var handler = new SocketsHttpHandler
         {
@@ -41,12 +49,9 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
             MaxConnectionsPerServer = 1000
         };
 
-        var url = $"{(settings.UseSsl ? "https" : "http")}://{settings.Host}:{settings.Port}";
-        LogMessages.OpenningGrpcChannel(DataSource.LoggingConfiguration.ConnectionLogger, url);
-
-        if (settings.UseSsl)
+        if (_settings.UseSsl)
         {
-            var path = settings.RootCertificate;
+            var path = _settings.RootCertificate;
             if (path != null)
             {
                 if (!File.Exists(Path.Combine(path, "cert.pem")))
@@ -57,19 +62,22 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
 
                 var cert = X509Certificate2.CreateFromPemFile(Path.Combine(path, "cert.pem"),
                     Path.Combine(path, "key.pem"));
+
                 handler.SslOptions.ClientCertificates ??= new X509CertificateCollection();
                 handler.SslOptions.ClientCertificates.Add(cert);
 
-                if (settings.TrustSsl)
+                if (_settings.TrustSsl)
                     handler.SslOptions.CertificateChainPolicy = new X509ChainPolicy
                         { TrustMode = X509ChainTrustMode.CustomRootTrust, CustomTrustStore = { cert } };
             }
         }
 
-        _channel = GrpcChannel.ForAddress(url, new GrpcChannelOptions
+        _channel = GrpcChannel.ForAddress(Endpoint, new GrpcChannelOptions
         {
             HttpHandler = handler
         });
+
+        LogGrpcConnecting(Endpoint);
         await _channel.ConnectAsync(token);
 
         _invoker = _channel.CreateCallInvoker();
@@ -77,13 +85,13 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
 
     private CallOptions PopulateHeaders(CallOptions options)
     {
-        var token = DataSource.CredentialsProvider.GetToken();
+        var token = _credentialsProvider.GetToken();
         var headers = options.Headers ?? new Metadata();
         if (!string.IsNullOrEmpty(token) && headers.All(x => x.Key != YdbMetadata.RpcAuthHeader))
             headers.Add(YdbMetadata.RpcAuthHeader, token);
 
         if (headers.All(x => x.Key != YdbMetadata.RpcDatabaseHeader))
-            headers.Add(YdbMetadata.RpcDatabaseHeader, DataSource.Settings.Database);
+            headers.Add(YdbMetadata.RpcDatabaseHeader, _settings.Database);
 
         return options.WithHeaders(headers);
     }
@@ -91,9 +99,7 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
     public async ValueTask<TResponse> UnaryCallAsync<TRequest, TResponse>(Method<TRequest, TResponse> method,
         TRequest request, CallOptions? options = null) where TRequest : class where TResponse : class
     {
-        var token = DataSource.CredentialsProvider.GetToken();
         var callOptions = PopulateHeaders(options ?? GetDefaultOptions());
-
         return await _invoker.AsyncUnaryCall(method, null, callOptions, request);
     }
 
@@ -105,9 +111,17 @@ internal sealed class YdbConnector : IYdbConnector, IAsyncDisposable
     public TResponse UnaryCall<TRequest, TResponse>(Method<TRequest, TResponse> method,
         TRequest request, CallOptions? options = null) where TRequest : class where TResponse : class
     {
-        var token = DataSource.CredentialsProvider.GetToken();
         var callOptions = PopulateHeaders(options ?? GetDefaultOptions());
-
         return _invoker.BlockingUnaryCall(method, null, callOptions, request);
     }
+
+    #region LOGGING
+
+    [LoggerMessage(Message = "Connecting to grpc endpoint `{endpoint}`", Level = LogLevel.Information)]
+    public partial void LogGrpcConnecting(string endpoint);
+
+    [LoggerMessage(Message = "Shutdown connection to grpc endpoint `{endpoint}`", Level = LogLevel.Information)]
+    public partial void LogGrpcShutdown(string endpoint);
+
+    #endregion
 }

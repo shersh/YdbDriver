@@ -21,7 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="Google.Protobuf" Version="3.21.12" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.51.0" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.52.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
         <PackageReference Include="Yandex.Cloud.SDK" Version="1.2.0" />
         <PackageReference Include="Yandex.Cloud.SDK.IamJwtCredentialsProviderExtension" Version="1.0.0" />
